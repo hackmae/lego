@@ -55,7 +55,7 @@ console.log('number of deals :',numberOfDeals);
 var shoppingCommunities = deals.map(deal => deal.community);
 var uniqueShoppingCommunities = [...new Set(shoppingCommunities)]; //to make it unique
 console.log(uniqueShoppingCommunities);
-console.log('number of shopping communities :',uniqueShoppingCommunities.length,'\n\n');
+console.log('number of shopping communities :',uniqueShoppingCommunities.length);
 
 // 🎯 TODO 4: Sort by price
 // 1. Create a function to sort the deals by price
@@ -65,7 +65,7 @@ function sortByPrice(a, b) {
   return a.price - b.price;
 }
 var dealsByPrice = deals.sort(sortByPrice);
-console.log('Deals by price');
+console.log('\n\nDeals by price');
 dealsByPrice.forEach(deal => {
   console.log(`Title: ${deal.title}, Price: ${deal.price}`);
 });
@@ -74,6 +74,15 @@ dealsByPrice.forEach(deal => {
 // 1. Create a function to sort the deals by date
 // 2. Create a variable and assign it the list of deals by date from recent to old
 // 3. Log the variable
+function sortByDate(a, b) {
+  return new Date(b.published) - new Date(a.published);
+}
+var dealsByDate = deals.sort(sortByDate);
+console.log('\n\nDeals by date');
+dealsByDate.forEach(deal => {
+  console.log(`Title: ${deal.title}, Date: ${deal.published}`);
+});
+
 
 // 🎯 TODO 6: Filter a specific percentage discount range
 // 1. Filter the list of deals between 50% and 75%
