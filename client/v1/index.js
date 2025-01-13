@@ -45,12 +45,17 @@ console.log(highestReduction);
 // 1. Create a variable and assign it the number of deals
 // 2. Log the variable
 var numberOfDeals = deals.length;
-console.log(numberOfDeals);
+console.log('number of deals :',numberOfDeals);
 
 // 🎯 TODO 3: Website name
 // 1. Create a variable and assign it the list of shopping community name only
 // 2. Log the variable
 // 3. Log how many shopping communities we have
+
+var shoppingCommunities = deals.map(deal => deal.community);
+var uniqueShoppingCommunities = [...new Set(shoppingCommunities)];
+console.log(uniqueShoppingCommunities);
+console.log('number of shopping communities :',uniqueShoppingCommunities.length);
 
 // 🎯 TODO 4: Sort by price
 // 1. Create a function to sort the deals by price
