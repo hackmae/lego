@@ -87,6 +87,15 @@ dealsByDate.forEach(deal => {
 // 🎯 TODO 6: Filter a specific percentage discount range
 // 1. Filter the list of deals between 50% and 75%
 // 2. Log the list
+function filterByDiscount(deal) {
+  return deal.discount >= 50 && deal.discount <= 75;
+}
+var dealsByDiscount = deals.filter(filterByDiscount);
+console.log('\n\nDeals by discount');
+dealsByDiscount.forEach(deal => {
+  console.log(`Title: ${deal.title}, Discount: ${deal.discount}`);
+});
+
 
 // 🎯 TODO 7: Average percentage discount
 // 1. Determine the average percentage discount of the deals
