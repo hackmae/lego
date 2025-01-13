@@ -53,14 +53,22 @@ console.log('number of deals :',numberOfDeals);
 // 3. Log how many shopping communities we have
 
 var shoppingCommunities = deals.map(deal => deal.community);
-var uniqueShoppingCommunities = [...new Set(shoppingCommunities)];
+var uniqueShoppingCommunities = [...new Set(shoppingCommunities)]; //to make it unique
 console.log(uniqueShoppingCommunities);
-console.log('number of shopping communities :',uniqueShoppingCommunities.length);
+console.log('number of shopping communities :',uniqueShoppingCommunities.length,'\n\n');
 
 // 🎯 TODO 4: Sort by price
 // 1. Create a function to sort the deals by price
 // 2. Create a variable and assign it the list of sets by price from lowest to highest
 // 3. Log the variable
+function sortByPrice(a, b) {
+  return a.price - b.price;
+}
+var dealsByPrice = deals.sort(sortByPrice);
+console.log('Deals by price');
+dealsByPrice.forEach(deal => {
+  console.log(`Title: ${deal.title}, Price: ${deal.price}`);
+});
 
 // 🎯 TODO 5: Sort by date
 // 1. Create a function to sort the deals by date
