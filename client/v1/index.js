@@ -143,15 +143,23 @@ for (const community in communities) {
 console.log('\n\nDeals by price for each community');
 for (const community in communities) {
   communities[community].sort((a, b) => b.price - a.price); // Highest to lowest
-  console.log(`Community: ${community}`);
+  console.log('Community:', community);
   communities[community].forEach(deal => {
-    console.log(deal.title,' : ', deal.price)});
+    console.log('Title : ',deal.title,' \nPrice : ', deal.price)});
 }
 
 
 // 🎯 TODO 10: Sort by date for each community
 // 1. For each set, sort the deals by date, from old to recent
 // 2. Log the sort
+console.log('\n\nDeals by date for each community');
+for (const community in communities) {
+  communities[community].sort((a, b) => new Date(a.published) - new Date(b.published)); // Old to recent
+  console.log('Community:', community);
+  communities[community].forEach(deal => {
+    console.log('Title : ',deal.title, ' \nDate : ',deal.published);
+  });
+}
 
 
 /**
