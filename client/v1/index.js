@@ -479,6 +479,8 @@ else {
 // 🎯 TODO 13: Find a specific item
 // 1. Find the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
 // 2. Log the item
+const specificItemUuid = VINTED.find(item => item.uuid === 'f2c5377c-84f9-571d-8712-98902dcbb913');
+console.log('\n\nThe item with the specific uuid is : ',specificItemUuid);
 
 // 🎯 TODO 14: Delete a specific item
 // 1. Delete the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
