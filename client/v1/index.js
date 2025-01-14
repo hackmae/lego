@@ -491,7 +491,7 @@ updatedVinted.forEach(item => {
   console.log(item);
 });
 
-// 🎯 TODO 5: Save a favorite item
+// 🎯 TODO 15: Save a favorite item
 // We declare and assign a variable called `sealedCamera`
 let sealedCamera = {
   link: "https://www.vinted.fr/items/5563396347-lego-43230-omaggio-a-walter-disney-misb",
@@ -508,7 +508,10 @@ let camera = sealedCamera;
 camera.favorite = true;
 
 // 1. Log `sealedCamera` and `camera` variables
+console.log('\n\nSealed Camera : ',sealedCamera);
+console.log('Camera : ',camera);
 // 2. What do you notice?
+// the favorite property is added to the 2 objects
 
 // we make (again) a new assignment again
 sealedCamera = {
@@ -520,9 +523,12 @@ sealedCamera = {
 };
 
 // 3. Update `camera` property with `favorite` to true WITHOUT changing sealedCamera properties
+camera = {...sealedCamera, favorite: true};
+console.log('\nCamera again: ',camera);
+console.log('Sealed Camera again: ',sealedCamera);
 
 
-// 🎯 TODO 11: Compute the profitability
+// 🎯 TODO 16: Compute the profitability
 // From a specific deal called `deal`
 const deal = {
   'title':  'La caméra Hommage à Walt Disney',
