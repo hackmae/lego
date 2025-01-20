@@ -246,19 +246,20 @@ sortSelect1.addEventListener('change', async (event) => {
 //F6 - filter by date -> sort deals by date
 const filterDealsByDate = (deals, sortOption) => {
   if (sortOption === 'date-asc') {
-    return deals.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return deals.sort((a, b) => new Date(a.published) - new Date(b.published));
   } else if (sortOption === 'date-desc') {
-    return deals.sort((a, b) => new Date(b.date) - new Date(a.date));
+    return deals.sort((a, b) => new Date(b.published) - new Date(a.published));
   }
   return deals; 
 };
 
-const sortSelect = document.getElementById('sort-select');
+const sortSelect2 = document.getElementById('sort-select');
 
-sortSelect.addEventListener('change', async (event) => {
+sortSelect2.addEventListener('change', async (event) => {
   const sortOption = event.target.value; // Get selected sort option
   const sortedDeals = filterDealsByDate(currentDeals, sortOption);
   renderDeals(sortedDeals);
 });
+
 
 
