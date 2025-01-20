@@ -93,6 +93,66 @@ const renderDeals = deals => {
   sectionDeals.appendChild(fragment);
 };
 
+
+/**
+ * Fetch Vinted sales for a given Lego set ID
+ * @param {Number} setId - The Lego set ID to fetch sales for
+ * @return {Object} - Sales data
+ */
+const fetchVintedSales = async (setId) => {
+  try {
+    const response = await fetch(
+      `https://lego-api-blue.vercel.app/sales?id=${setId}`
+    );
+    const body = await response.json();
+
+    if (body.success !== true) {
+      console.error(body);
+      return [];
+    }
+
+    return body.data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+/**
+ * Render Vinted sales for a given Lego set ID
+ * @param {Array} sales - The Vinted sales data to display
+ */
+const renderVintedSales = (sales) => {
+  const salesSection = document.querySelector('#vinted-sales');
+  salesSection.innerHTML = '<h2>Vinted Sales</h2>';
+
+  if (sales.length === 0) {
+    salesSection.innerHTML += '<p>No sales found for this Lego set.</p>';
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  const div = document.createElement('div');
+  const template = sales
+    .map(sale => {
+      return `
+      <div class="sale">
+        <a href="${sale.link}" target="_blank">${sale.title}</a>
+        <span>Price: ${sale.price}</span>
+        <span>Condition: ${sale.condition}</span>
+        <span>Location: ${sale.location}</span>
+      </div>
+    `;
+    })
+    .join('');
+
+  div.innerHTML = template;
+  fragment.appendChild(div);
+  salesSection.appendChild(fragment);
+};
+
+
+
 /**
  * Render page selector
  * @param  {Object} pagination
@@ -262,4 +322,21 @@ sortSelect2.addEventListener('change', async (event) => {
 });
 
 
+//F7 - display vinted sales for a given lego set id
+const selectLegoSetId = document.querySelector('#lego-set-id-select');
 
+selectLegoSetId.addEventListener('change', async (event) => {
+  const setId = event.target.value;  // Get the selected Lego set ID
+
+  if (setId) {
+    const vintedSales = await fetchVintedSales(setId);  // Fetch sales for the selected set ID
+    renderVintedSales(vintedSales);  // Render the sales
+  }
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const deals = await fetchDeals();
+
+  setCurrentDeals(deals);
+  render(currentDeals, currentPagination);
+});
