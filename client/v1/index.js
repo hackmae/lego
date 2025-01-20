@@ -467,7 +467,7 @@ console.log('P25 Price Value : ',p25Value.toFixed(2) ,'€');
 
 // 🎯 TODO 12: Very old listed items
 // // 1. Log if we have very old items (true or false)
-// // A very old item is an item `published` more than 3 weeks ago.
+// // A very old item is an item 'published' more than 3 weeks ago.
 console.log('\n\nDo we have very old items ?');
 if (VINTED.some(item => new Date(item.published) < new Date(Date.now() - 3 * 7 * 24 * 60 * 60 * 1000))) {
   console.log('True'); // We have very old items
@@ -539,8 +539,18 @@ const deal = {
 
 // 1. Compute the potential highest profitability based on the VINTED items
 // 2. Log the value
-const potentialHighProfitability = Math.max(...VINTED.map(item => item.price)) - deal.price;
+const potentialHighProfitability = Math.max(...VINTED.map(item => item.price)) - deal.price; // Highest price - deal price
 console.log('\n\nPotential highest profitability : ',potentialHighProfitability.toFixed(2),'€');
+
+//other version
+let highestProf = 0;
+VINTED.forEach(item => {
+  const profitability = deal.retail - item.price;
+  if (profitability > highestProf) {
+    highestProf = profitability;
+  }
+});
+console.log('Highest profitability : ',highestProf.toFixed(2),'€');
 
 /**
  * 🎬
