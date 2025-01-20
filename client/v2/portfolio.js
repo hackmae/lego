@@ -193,3 +193,20 @@ filterDiscountBtn.addEventListener('click', () => {
   const filteredDeals = filterDealsByDiscount(currentDeals);
   renderDeals(filteredDeals);
 });
+
+
+//F3 - filter by most commented -> show deals with more than 15 comments
+const filterDealsByComments = (deals) => {
+  return deals.filter(deal => {
+    return deal.comments > 15;
+  });
+};
+
+const filterCommentsBtn = document.getElementById('filter-commented');
+
+filterCommentsBtn.addEventListener('click', () => {
+  const filteredDeals = filterDealsByComments(currentDeals);
+  renderDeals(filteredDeals);
+});
+
+
