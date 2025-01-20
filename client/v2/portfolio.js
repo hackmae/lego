@@ -157,3 +157,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
 });
+
+
+//Browse available deals to load more deals
+selectPage.addEventListener('change', async (event) => {
+  const deals = await fetchDeals(parseInt(event.target.value));
+
+  setCurrentDeals(deals);
+  render(currentDeals, currentPagination);
+});
+
+//Filter by best discount -> show deals with a discount of 50% or more
+document.querySelector('#best-discount').addEventListener('click', async () => {
+  const deals = currentDeals.filter(deal => deal.discount >= 50);
+
+  renderDeals(deals);
+});
+
