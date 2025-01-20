@@ -25,6 +25,7 @@ This endpoint accepts the following optional query string parameters:
 let currentDeals = [];
 let currentPagination = {};
 
+
 // instantiate the selectors
 const selectShow = document.querySelector('#show-select');
 const selectPage = document.querySelector('#page-select');
@@ -137,6 +138,17 @@ const render = (deals, pagination) => {
   renderLegoSetIds(deals)
 };
 
+document.addEventListener('DOMContentLoaded', async () => {
+  const deals = await fetchDeals();
+
+  setCurrentDeals(deals);
+
+  // Initialize allDeals properly at the start
+  allDeals = [...deals.result];
+
+  render(currentDeals, currentPagination);
+});
+
 /**
  * Declaration of all Listeners
  */
@@ -144,6 +156,7 @@ const render = (deals, pagination) => {
 /**
  * Select the number of deals to display
  */
+//F0 - Show more deals
 selectShow.addEventListener('change', async (event) => {
   const deals = await fetchDeals(currentPagination.currentPage, parseInt(event.target.value));
 
@@ -159,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
-//Browse available deals to load more deals
+//F1 - Browse available deals to load more deals
 selectPage.addEventListener('change', async (event) => {
   const deals = await fetchDeals(parseInt(event.target.value));
 
@@ -167,10 +180,16 @@ selectPage.addEventListener('change', async (event) => {
   render(currentDeals, currentPagination);
 });
 
-//Filter by best discount -> show deals with a discount of 50% or more
-document.querySelector('#best-discount').addEventListener('click', async () => {
-  const deals = currentDeals.filter(deal => deal.discount >= 50);
 
-  renderDeals(deals);
+//F2 - filter by best discount -> show deals with a discount of 50% or more
+const filterDealsByDiscount = (deals) => {
+  return deals.filter(deal => {
+    return parseFloat(deal.discount) > 20;
+  });
+};
+const filterDiscountBtn = document.getElementById('filter-discount');
+
+filterDiscountBtn.addEventListener('click', () => {
+  const filteredDeals = filterDealsByDiscount(currentDeals);
+  renderDeals(filteredDeals);
 });
-
