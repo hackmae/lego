@@ -209,4 +209,20 @@ filterCommentsBtn.addEventListener('click', () => {
   renderDeals(filteredDeals);
 });
 
+//F4 - filter by hot deals -> show deals with temperature above 100
+const filterDealsByTemperature = (deals) => {
+  return deals.filter(deal => {
+    return deal.temperature > 100;
+  });
+};
+
+const filterTemperatureBtn = document.getElementById('filter-hot-deals');
+
+filterTemperatureBtn.addEventListener('click', () => {
+  const filteredDeals = filterDealsByTemperature(currentDeals);
+  renderDeals(filteredDeals);
+});
+
+
+
 
