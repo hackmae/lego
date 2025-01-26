@@ -82,6 +82,7 @@ const renderDeals = deals => {
         <span>${deal.id}</span>
         <a href="${deal.link}">${deal.title}</a>
         <span>${deal.price}</span>
+        <span id="starDeals">*</span>
       </div>
     `;
     })
@@ -92,7 +93,6 @@ const renderDeals = deals => {
   sectionDeals.innerHTML = '<h2>Deals</h2>';
   sectionDeals.appendChild(fragment);
 };
-
 
 /**
  * Fetch Vinted sales for a given Lego set ID
@@ -107,49 +107,99 @@ const fetchVintedSales = async (setId) => {
     const body = await response.json();
 
     if (body.success !== true) {
-      console.error(body);
+      console.error(`No sales data for ID ${setId}:`, body);
       return [];
     }
 
     return body.data;
   } catch (error) {
-    console.error(error);
+    console.error(`Error fetching Vinted sales for ID ${setId}:`, error);
     return [];
   }
 };
 
 /**
- * Render Vinted sales for a given Lego set ID
- * @param {Array} sales - The Vinted sales data to display
+ * Fetch and render Vinted sales for all Lego set IDs
+ * @param {Array} deals - Current deals to extract IDs from
  */
-const renderVintedSales = (sales) => {
+const fetchAndRenderAllVintedSales = async (deals) => {
   const salesSection = document.querySelector('#vinted-sales');
   salesSection.innerHTML = '<h2>Vinted Sales</h2>';
 
-  if (sales.length === 0) {
-    salesSection.innerHTML += '<p>No sales found for this Lego set.</p>';
+  if (!deals || deals.length === 0) {
+    salesSection.innerHTML += '<p>No deals available to fetch sales data.</p>';
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+
+  await Promise.all(
+    deals.map(async (deal) => {
+      const sales = await fetchVintedSales(deal.id); // Fetch sales for each deal ID
+
+      const div = document.createElement('div');
+      div.innerHTML = `<h3>Sales for Lego Set ID: ${deal.id}</h3>`;
+
+      if (!sales || sales.length === 0) {
+        div.innerHTML += '<p>No sales found for this Lego set.</p>';
+      } else {
+        const salesTemplate = sales
+          .map(
+            (sale) => `
+            <div class="sale">
+              <a href="${sale.link}" target="_blank">${sale.title}</a>
+              <p>Price: ${sale.price}</p>
+              <p>Condition: ${sale.condition}</p>
+              <p>Location: ${sale.location}</p>
+            </div>
+          `
+          )
+          .join('');
+        div.innerHTML += salesTemplate;
+      }
+
+      fragment.appendChild(div);
+    })
+  );
+
+  salesSection.appendChild(fragment);
+};
+
+/**
+ * Render Vinted sales for a given Lego set ID
+ * @param {Number} setId - The Lego set ID to render sales for
+ */
+const renderVintedSalesForSetId = async (setId) => {
+  const salesSection = document.querySelector('#vinted-sales');
+  salesSection.innerHTML = '<h2>Vinted Sales</h2>';
+
+  const sales = await fetchVintedSales(setId);
+
+  if (!sales || sales.length === 0) {
+    salesSection.innerHTML += `<p>No sales found for Lego set ID: ${setId}.</p>`;
     return;
   }
 
   const fragment = document.createDocumentFragment();
   const div = document.createElement('div');
-  const template = sales
-    .map(sale => {
-      return `
+  const salesTemplate = sales
+    .map(
+      (sale) => `
       <div class="sale">
         <a href="${sale.link}" target="_blank">${sale.title}</a>
-        <span>Price: ${sale.price}</span>
-        <span>Condition: ${sale.condition}</span>
-        <span>Location: ${sale.location}</span>
+        <p>Price: ${sale.price}</p>
+        <p>Condition: ${sale.condition}</p>
+        <p>Location: ${sale.location}</p>
       </div>
-    `;
-    })
+    `
+    )
     .join('');
 
-  div.innerHTML = template;
+  div.innerHTML = salesTemplate;
   fragment.appendChild(div);
   salesSection.appendChild(fragment);
 };
+
 
 
 
@@ -321,8 +371,8 @@ sortSelect2.addEventListener('change', async (event) => {
   renderDeals(sortedDeals);
 });
 
-
-//F7 - display vinted sales for a given lego set id
+/*
+//F7old - display vinted sales for a given lego set id
 const selectLegoSetId = document.querySelector('#lego-set-id-select');
 
 selectLegoSetId.addEventListener('change', async (event) => {
@@ -340,3 +390,134 @@ document.addEventListener('DOMContentLoaded', async () => {
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
 });
+
+
+selectLegoSetIds.addEventListener('change', async (event) => {
+  const setId = event.target.value; // Get selected Lego set ID
+
+  if (setId) {
+    // Render Vinted sales for the selected ID
+    renderVintedSalesForSetId(setId);
+  }
+});
+
+
+// F7 - Display Vinted sales for a given Lego set ID
+selectLegoSetId.addEventListener('change', async (event) => {
+  const setId = event.target.value; // Get the selected Lego set ID
+
+  if (setId) {
+    const vintedSales = await fetchVintedSales(setId); // Fetch sales for the selected set ID
+    renderVintedSales(vintedSales); // Render the sales
+    updateIndicators(vintedSales); // Update indicators based on sales
+  }
+});
+
+// F8 - Display total number of sales
+const updateTotalSales = (sales) => {
+  const spanNbSales = document.querySelector('#nbSales');
+  spanNbSales.textContent = sales.length;
+};*/
+
+// F9 - Display average p5, p25 and p50 price value
+/*const getAveragePrice = (sales) => {
+  const prices = sales.map(sale => sale.price);
+  const p5 = prices[Math.floor(prices.length * 0.05)];
+  const p25 = prices[Math.floor(prices.length * 0.25)];
+  const p50 = prices[Math.floor(prices.length * 0.5)];
+
+  return { p5, p25, p50 };
+};
+
+const updateAveragePrice = (sales) => {
+  const { p5, p25, p50 } = getAveragePrice(sales);
+  const spanP5 = document.querySelector('#p5');
+  const spanP25 = document.querySelector('#p25');
+  const spanP50 = document.querySelector('#p50');
+
+  spanP5.textContent = p5;
+  spanP25.textContent = p25;
+  spanP50.textContent = p50;
+};
+
+// F10 - Display lifetime value -> how long it exists on Vinted
+const getLifetimeValue = (sales) => {
+  const dates = sales.map(sale => new Date(sale.published));
+  const minDate = new Date(Math.min(...dates));
+  const maxDate = new Date(Math.max(...dates));
+  const lifetime = maxDate - minDate;
+
+  return lifetime;
+};
+
+const updateLifetimeValue = (sales) => {
+  const lifetime = getLifetimeValue(sales);
+  const spanLifetime = document.querySelector('#lifetime');
+
+  spanLifetime.textContent = lifetime;
+};
+
+// F11 - Open deal link in a new page
+sectionDeals.addEventListener('click', async (event) => {
+  const dealId = event.target.closest('.deal').id;
+  const deal = currentDeals.find(deal => deal.uuid === dealId);
+
+  if (deal) {
+    window.open(deal.link, '_blank');
+  }
+});
+
+// F12 - Open sold item link in a new page
+document.addEventListener('click', async (event) => {
+  const sale = event.target.closest('.sale');
+
+  if (sale) {
+    window.open(sale.querySelector('a').href, '_blank');
+  }
+});*/
+
+
+
+// F13 - Save a deal as a favorite
+const saveFavorite = (deal) => {
+  let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+  // Check if the deal is already in favorites
+  if (!favorites.some(fav => fav.uuid === deal.uuid)) {
+    favorites.push(deal);
+  }
+
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+};
+
+// Clear favorites on page reload
+window.addEventListener('load', () => {
+  localStorage.removeItem('favorites');
+});
+
+// Event listener for saving a deal as favorite
+sectionDeals.addEventListener('click', async (event) => {
+  const dealId = event.target.closest('.deal')?.id;
+  const deal = currentDeals.find(deal => deal.uuid === dealId);
+
+  if (deal) {
+    saveFavorite(deal);
+  }
+});
+
+
+// F14 - Filter deals by favorite
+const filterDealsByFavorite = (deals) => {
+  return deals.filter(deal => {
+    return deal.temperature > 100;
+  });
+};
+
+const filterFavoriteBtn = document.getElementById('filter-favorite-deals');
+
+filterFavoriteBtn.addEventListener('click', () => {
+  const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  renderDeals(favorites);
+});
+
+//sales = thread_details_dealId that you can find on a deal page
