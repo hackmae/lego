@@ -79,11 +79,11 @@ const renderDeals = deals => {
     .map(deal => {
       return `
       <div class="deal" id="${deal.uuid}">
-          <img src="${deal.image || 'placeholder.png'}" alt="Deal Image">
+          <img src="${deal.photo || 'placeholder.png'}" alt="Deal Image">
           <p><strong>ID:</strong> ${deal.id}</p>
           <p><strong>Name:</strong> <a href="${deal.link}" target="_blank">${deal.title}</a></p>
           <p><strong>Price:</strong> ${deal.price}</p>
-          <p><strong>Date:</strong> ${deal.date}</p>
+          <p><strong>Date:</strong> ${new Date(deal.published)}</p>
           <span id="starDeals" class="favorite-deal">★</span>
         </div>
     `;
@@ -154,11 +154,11 @@ const renderSales = (sales) => {
       saleDiv.classList.add('sale');
 
       saleDiv.innerHTML = `
-        <img src="${sale.image || 'placeholder.png'}" alt="Sale Image">
         <p><strong>ID/Name:</strong> ${sale.title}</p>
         <p><strong>Buy Link:</strong> <a href="${sale.link}" target="_blank">${sale.link}</a></p>
         <p><strong>Price:</strong> ${sale.price}</p>
         <p><strong>Date:</strong> ${sale.published}</p>
+        <span id="starDeals" class="favorite-deal">★</span>
       `;
 
       fragment.appendChild(saleDiv);
@@ -167,8 +167,6 @@ const renderSales = (sales) => {
     sectionSales.appendChild(fragment);
   }
 };
-
-
 
 
 
@@ -484,6 +482,8 @@ sectionDeals.addEventListener('click', async (event) => {
   }
 });
 
+
+
 // F12 - Open sold item link in a new page
 document.addEventListener('click', async (event) => {
   // Check if the clicked element is an anchor tag (link)
@@ -493,7 +493,6 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
   }
 });
-
 
 
 
