@@ -30,6 +30,8 @@ let currentPagination = {};
 const selectShow = document.querySelector('#show-select');
 const selectPage = document.querySelector('#page-select');
 const selectLegoSetIds = document.querySelector('#lego-set-id-select');
+const inputLegoSetId = document.getElementById("lego-set-id-select");
+const fetchSalesBtn = document.getElementById("fetch-sales-btn");
 const sectionDeals= document.querySelector('#deals');
 const spanNbDeals = document.querySelector('#nbDeals');
 
@@ -94,111 +96,70 @@ const renderDeals = deals => {
   sectionDeals.appendChild(fragment);
 };
 
+
 /**
  * Fetch Vinted sales for a given Lego set ID
- * @param {Number} setId - The Lego set ID to fetch sales for
- * @return {Object} - Sales data
+ * @param {string} id - The Lego set ID to fetch sales for
+ * @return {Array} - list of sales
  */
-const fetchVintedSales = async (setId) => {
+const fetchSales = async (id) => {
+  if (!id || id.trim() === '') {
+    console.log('ID is empty');
+    return { result: [] };
+  }
+
   try {
-    const response = await fetch(
-      `https://lego-api-blue.vercel.app/sales?id=${setId}`
-    );
+    console.log(`Fetching sales for ID: ${id}`);
+    const response = await fetch(`https://lego-api-blue.vercel.app/sales?id=${id}`);
     const body = await response.json();
 
     if (body.success !== true) {
-      console.error(`No sales data for ID ${setId}:`, body);
-      return [];
+      console.error('API Error:', body);
+      return { result: [] };
     }
 
-    return body.data;
+    console.log('Fetched sales:', body.data);
+    return body.data; 
   } catch (error) {
-    console.error(`Error fetching Vinted sales for ID ${setId}:`, error);
-    return [];
+    console.error('Fetch error:', error);
+    return { result: [] };
   }
 };
 
-/**
- * Fetch and render Vinted sales for all Lego set IDs
- * @param {Array} deals - Current deals to extract IDs from
- */
-const fetchAndRenderAllVintedSales = async (deals) => {
-  const salesSection = document.querySelector('#vinted-sales');
-  salesSection.innerHTML = '<h2>Vinted Sales</h2>';
 
-  if (!deals || deals.length === 0) {
-    salesSection.innerHTML += '<p>No deals available to fetch sales data.</p>';
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-
-  await Promise.all(
-    deals.map(async (deal) => {
-      const sales = await fetchVintedSales(deal.id); // Fetch sales for each deal ID
-
-      const div = document.createElement('div');
-      div.innerHTML = `<h3>Sales for Lego Set ID: ${deal.id}</h3>`;
-
-      if (!sales || sales.length === 0) {
-        div.innerHTML += '<p>No sales found for this Lego set.</p>';
-      } else {
-        const salesTemplate = sales
-          .map(
-            (sale) => `
-            <div class="sale">
-              <a href="${sale.link}" target="_blank">${sale.title}</a>
-              <p>Price: ${sale.price}</p>
-              <p>Condition: ${sale.condition}</p>
-              <p>Location: ${sale.location}</p>
-            </div>
-          `
-          )
-          .join('');
-        div.innerHTML += salesTemplate;
-      }
-
-      fragment.appendChild(div);
-    })
-  );
-
-  salesSection.appendChild(fragment);
-};
 
 /**
  * Render Vinted sales for a given Lego set ID
- * @param {Number} setId - The Lego set ID to render sales for
+ * @param {Array} sales - list of sales
  */
-const renderVintedSalesForSetId = async (setId) => {
-  const salesSection = document.querySelector('#vinted-sales');
-  salesSection.innerHTML = '<h2>Vinted Sales</h2>';
+const renderSales = (sales) => {
+  console.log("🔹 Données reçues par renderSales:", sales);
 
-  const sales = await fetchVintedSales(setId);
+  const salesArray = sales.result || [];
 
-  if (!sales || sales.length === 0) {
-    salesSection.innerHTML += `<p>No sales found for Lego set ID: ${setId}.</p>`;
-    return;
-  }
-
+  const sectionSales = document.querySelector('#vinted-sales');
+  sectionSales.innerHTML = '<h2>Vinted Sales</h2>';
   const fragment = document.createDocumentFragment();
   const div = document.createElement('div');
-  const salesTemplate = sales
-    .map(
-      (sale) => `
+
+  if (!salesArray || salesArray.length === 0) {
+    console.log("⚠️ Aucune vente trouvée !");
+    div.innerHTML = `<p>No sales found for this Lego set ID.</p>`;
+  } else {
+    console.log("✅ Affichage des ventes...");
+    div.innerHTML = salesArray.map(sale => `
       <div class="sale">
         <a href="${sale.link}" target="_blank">${sale.title}</a>
         <p>Price: ${sale.price}</p>
-        <p>Condition: ${sale.condition}</p>
-        <p>Location: ${sale.location}</p>
-      </div>
-    `
-    )
-    .join('');
+        <p>Published: ${sale.published}</p>
+      </div>`
+    ).join('');
+  }
 
-  div.innerHTML = salesTemplate;
   fragment.appendChild(div);
-  salesSection.appendChild(fragment);
+  sectionSales.appendChild(fragment);
 };
+
 
 
 
@@ -252,9 +213,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const deals = await fetchDeals();
 
   setCurrentDeals(deals);
-
-  // Initialize allDeals properly at the start
-  allDeals = [...deals.result];
 
   render(currentDeals, currentPagination);
 });
@@ -371,48 +329,23 @@ sortSelect2.addEventListener('change', async (event) => {
   renderDeals(sortedDeals);
 });
 
+
+
+// F7 - Display Vinted sales for a given Lego set ID (click on Sales button)
+fetchSalesBtn.addEventListener("click", async () => {
+  const setId = inputLegoSetId.value.trim();
+  if (!setId) {
+    console.log("Please enter a Lego set ID");
+    return;
+  }
+  
+  console.log("Sales for the lego set :", setId);
+  const sales = await fetchSales(setId);
+  renderSales(sales);
+});
+
+
 /*
-//F7old - display vinted sales for a given lego set id
-const selectLegoSetId = document.querySelector('#lego-set-id-select');
-
-selectLegoSetId.addEventListener('change', async (event) => {
-  const setId = event.target.value;  // Get the selected Lego set ID
-
-  if (setId) {
-    const vintedSales = await fetchVintedSales(setId);  // Fetch sales for the selected set ID
-    renderVintedSales(vintedSales);  // Render the sales
-  }
-});
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const deals = await fetchDeals();
-
-  setCurrentDeals(deals);
-  render(currentDeals, currentPagination);
-});
-
-
-selectLegoSetIds.addEventListener('change', async (event) => {
-  const setId = event.target.value; // Get selected Lego set ID
-
-  if (setId) {
-    // Render Vinted sales for the selected ID
-    renderVintedSalesForSetId(setId);
-  }
-});
-
-
-// F7 - Display Vinted sales for a given Lego set ID
-selectLegoSetId.addEventListener('change', async (event) => {
-  const setId = event.target.value; // Get the selected Lego set ID
-
-  if (setId) {
-    const vintedSales = await fetchVintedSales(setId); // Fetch sales for the selected set ID
-    renderVintedSales(vintedSales); // Render the sales
-    updateIndicators(vintedSales); // Update indicators based on sales
-  }
-});
-
 // F8 - Display total number of sales
 const updateTotalSales = (sales) => {
   const spanNbSales = document.querySelector('#nbSales');
