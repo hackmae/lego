@@ -30,8 +30,6 @@ let currentPagination = {};
 const selectShow = document.querySelector('#show-select');
 const selectPage = document.querySelector('#page-select');
 const selectLegoSetIds = document.querySelector('#lego-set-id-select');
-const inputLegoSetId = document.getElementById("lego-set-id-select");
-const fetchSalesBtn = document.getElementById("fetch-sales-btn");
 const sectionDeals= document.querySelector('#deals');
 const spanNbDeals = document.querySelector('#nbDeals');
 
@@ -133,7 +131,7 @@ const fetchSales = async (id) => {
  * @param {Array} sales - list of sales
  */
 const renderSales = (sales) => {
-  console.log("🔹 Données reçues par renderSales:", sales);
+  console.log("Dates renderSales", sales);
 
   const salesArray = sales.result || [];
 
@@ -143,10 +141,10 @@ const renderSales = (sales) => {
   const div = document.createElement('div');
 
   if (!salesArray || salesArray.length === 0) {
-    console.log("⚠️ Aucune vente trouvée !");
+    console.log("No sales !");
     div.innerHTML = `<p>No sales found for this Lego set ID.</p>`;
   } else {
-    console.log("✅ Affichage des ventes...");
+    console.log("show sales");
     div.innerHTML = salesArray.map(sale => `
       <div class="sale">
         <a href="${sale.link}" target="_blank">${sale.title}</a>
@@ -331,6 +329,9 @@ sortSelect2.addEventListener('change', async (event) => {
 
 
 
+const inputLegoSetId = document.getElementById("lego-set-id-select");
+const fetchSalesBtn = document.getElementById("fetch-sales-btn");
+
 // F7 - Display Vinted sales for a given Lego set ID (click on Sales button)
 fetchSalesBtn.addEventListener("click", async () => {
   const setId = inputLegoSetId.value.trim();
@@ -345,34 +346,77 @@ fetchSalesBtn.addEventListener("click", async () => {
 });
 
 
-/*
+
 // F8 - Display total number of sales
 const updateTotalSales = (sales) => {
   const spanNbSales = document.querySelector('#nbSales');
-  spanNbSales.textContent = sales.length;
-};*/
+
+  // Ensure sales.result exists and is an array
+  const salesArray = Array.isArray(sales.result) ? sales.result : [];
+
+  // Update the displayed number of sales
+  spanNbSales.textContent = salesArray.length.toString();
+};
+
+
+selectLegoSetIds.addEventListener('input', async (event) => {
+  const inputSetId = event.target.value.trim();
+  console.log('Input Lego Set ID:', inputSetId);
+
+  const sales = await fetchSales(inputSetId);
+  
+  renderSales(sales);  // Display the sales in the UI
+  updateTotalSales(sales); // Update total sales count
+});
+
+
 
 // F9 - Display average p5, p25 and p50 price value
-/*const getAveragePrice = (sales) => {
-  const prices = sales.map(sale => sale.price);
-  const p5 = prices[Math.floor(prices.length * 0.05)];
-  const p25 = prices[Math.floor(prices.length * 0.25)];
-  const p50 = prices[Math.floor(prices.length * 0.5)];
+const getAveragePrice = (sales) => {
+  // Extract prices and filter only valid numbers
+  const prices = sales.result
+    .map(sale => parseFloat(sale.price))
+    .filter(price => !isNaN(price))  // Remove NaN values
+    .sort((a, b) => a - b); // Sort in ascending order
+
+  if (prices.length === 0) return { p5: 0, p25: 0, p50: 0 };
+
+  // Calculate percentiles
+  const p5 = prices[Math.floor(prices.length * 0.05)] || prices[0];
+  const p25 = prices[Math.floor(prices.length * 0.25)] || prices[0];
+  const p50 = prices[Math.floor(prices.length * 0.5)] || prices[0];
 
   return { p5, p25, p50 };
 };
 
 const updateAveragePrice = (sales) => {
   const { p5, p25, p50 } = getAveragePrice(sales);
+
+  // Select elements
   const spanP5 = document.querySelector('#p5');
   const spanP25 = document.querySelector('#p25');
   const spanP50 = document.querySelector('#p50');
 
-  spanP5.textContent = p5;
-  spanP25.textContent = p25;
-  spanP50.textContent = p50;
+  // Update UI
+  if (spanP5) spanP5.textContent = p5.toFixed(2);
+  if (spanP25) spanP25.textContent = p25.toFixed(2);
+  if (spanP50) spanP50.textContent = p50.toFixed(2);
 };
 
+// Attach event listener
+selectLegoSetIds.addEventListener('input', async (event) => {
+  const inputSetId = event.target.value.trim();
+  console.log('Input Lego Set ID:', inputSetId);
+
+  const sales = await fetchSales(inputSetId);
+  
+  renderSales(sales);       // Display sales
+  updateTotalSales(sales);  // Update total sales count
+  updateAveragePrice(sales); // Update price percentiles
+});
+
+
+/*
 // F10 - Display lifetime value -> how long it exists on Vinted
 const getLifetimeValue = (sales) => {
   const dates = sales.map(sale => new Date(sale.published));
