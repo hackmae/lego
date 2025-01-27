@@ -373,6 +373,7 @@ selectLegoSetIds.addEventListener('input', async (event) => {
 
 // F9 - Display average p5, p25 and p50 price value
 const getAveragePrice = (sales) => {
+  if (!sales.result || sales.result.length === 0) return { p5: 0, p25: 0, p50: 0 };
   // Extract prices and filter only valid numbers
   const prices = sales.result
     .map(sale => parseFloat(sale.price))
@@ -416,24 +417,41 @@ selectLegoSetIds.addEventListener('input', async (event) => {
 });
 
 
-/*
+
 // F10 - Display lifetime value -> how long it exists on Vinted
 const getLifetimeValue = (sales) => {
-  const dates = sales.map(sale => new Date(sale.published));
+  if (!sales.result || sales.result.length === 0) return 0; // Handle empty data
+  const dates = sales.result.map(sale => new Date(sale.published));
   const minDate = new Date(Math.min(...dates));
   const maxDate = new Date(Math.max(...dates));
-  const lifetime = maxDate - minDate;
-
-  return lifetime;
+  const lifetimeMiliSec = maxDate - minDate;
+  const lifetimeInDays = Math.ceil(lifetimeMiliSec / (1000 * 60 * 60 * 24)); // Convert ms to days
+  return lifetimeInDays;
 };
 
 const updateLifetimeValue = (sales) => {
   const lifetime = getLifetimeValue(sales);
   const spanLifetime = document.querySelector('#lifetime');
+  spanLifetime.textContent = `${lifetime} days`;
+}
 
-  spanLifetime.textContent = lifetime;
-};
+// Attach event listener
+selectLegoSetIds.addEventListener('input', async (event) => {
+  const inputSetId = event.target.value.trim();
+  console.log('Input Lego Set ID:', inputSetId);
 
+  const sales = await fetchSales(inputSetId);
+  
+  renderSales(sales);       // Display sales
+  updateTotalSales(sales);  // Update total sales count
+  updateAveragePrice(sales); // Update price percentiles
+  updateLifetimeValue(sales); // Update lifetime value
+});
+
+
+
+
+/*
 // F11 - Open deal link in a new page
 sectionDeals.addEventListener('click', async (event) => {
   const dealId = event.target.closest('.deal').id;
