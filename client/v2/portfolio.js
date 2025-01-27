@@ -238,6 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
+
 //F1 - Browse available deals to load more deals
 selectPage.addEventListener('change', async (event) => {
   const deals = await fetchDeals(parseInt(event.target.value));
@@ -245,6 +246,7 @@ selectPage.addEventListener('change', async (event) => {
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
 });
+
 
 
 //F2 - filter by best discount -> show deals with a discount of 50% or more
@@ -261,6 +263,7 @@ filterDiscountBtn.addEventListener('click', () => {
 });
 
 
+
 //F3 - filter by most commented -> show deals with more than 15 comments
 const filterDealsByComments = (deals) => {
   return deals.filter(deal => {
@@ -275,6 +278,8 @@ filterCommentsBtn.addEventListener('click', () => {
   renderDeals(filteredDeals);
 });
 
+
+
 //F4 - filter by hot deals -> show deals with temperature above 100
 const filterDealsByTemperature = (deals) => {
   return deals.filter(deal => {
@@ -288,6 +293,7 @@ filterTemperatureBtn.addEventListener('click', () => {
   const filteredDeals = filterDealsByTemperature(currentDeals);
   renderDeals(filteredDeals);
 });
+
 
 
 //F5 - filter by price -> sort by price ascending or descending
@@ -307,6 +313,7 @@ sortSelect1.addEventListener('change', async (event) => {
   const sortedDeals = filterDealsByPrice(currentDeals, sortOption);
   renderDeals(sortedDeals);
 });
+
 
 
 //F6 - filter by date -> sort deals by date
@@ -450,17 +457,21 @@ selectLegoSetIds.addEventListener('input', async (event) => {
 
 
 
-
-/*
 // F11 - Open deal link in a new page
 sectionDeals.addEventListener('click', async (event) => {
   const dealId = event.target.closest('.deal').id;
   const deal = currentDeals.find(deal => deal.uuid === dealId);
 
   if (deal) {
+    // Open the deal link in a new tab
     window.open(deal.link, '_blank');
+    
+    // Prevent the current page from being refreshed
+    event.preventDefault();
   }
 });
+
+
 
 // F12 - Open sold item link in a new page
 document.addEventListener('click', async (event) => {
@@ -469,7 +480,7 @@ document.addEventListener('click', async (event) => {
   if (sale) {
     window.open(sale.querySelector('a').href, '_blank');
   }
-});*/
+});
 
 
 
@@ -501,6 +512,7 @@ sectionDeals.addEventListener('click', async (event) => {
 });
 
 
+
 // F14 - Filter deals by favorite
 const filterDealsByFavorite = (deals) => {
   return deals.filter(deal => {
@@ -514,5 +526,3 @@ filterFavoriteBtn.addEventListener('click', () => {
   const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
   renderDeals(favorites);
 });
-
-//sales = thread_details_dealId that you can find on a deal page
