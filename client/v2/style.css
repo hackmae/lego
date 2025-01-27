@@ -184,9 +184,10 @@ button:hover {
 #starDeals {
   cursor: pointer;
   font-size: 1.5rem;
-  color: gold;
+  /*color: gold;*/
   margin-right: 10px;
 }
+
 
 /* No sales message styling */
 #vinted-sales p {
