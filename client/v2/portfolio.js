@@ -78,12 +78,14 @@ const renderDeals = deals => {
   const template = deals
     .map(deal => {
       return `
-      <div class="deal" id=${deal.uuid}>
-        <span>${deal.id}</span>
-        <a href="${deal.link}">${deal.title}</a>
-        <span>${deal.price}</span>
-        <span id="starDeals">*</span>
-      </div>
+      <div class="deal" id="${deal.uuid}">
+          <img src="${deal.image || 'placeholder.png'}" alt="Deal Image">
+          <p><strong>ID:</strong> ${deal.id}</p>
+          <p><strong>Name:</strong> <a href="${deal.link}" target="_blank">${deal.title}</a></p>
+          <p><strong>Price:</strong> ${deal.price}</p>
+          <p><strong>Date:</strong> ${deal.date}</p>
+          <span id="starDeals" class="favorite-deal">★</span>
+        </div>
     `;
     })
     .join('');
@@ -136,26 +138,34 @@ const renderSales = (sales) => {
   const salesArray = sales.result || [];
 
   const sectionSales = document.querySelector('#vinted-sales');
-  sectionSales.innerHTML = '<h2>Vinted Sales</h2>';
+  sectionSales.innerHTML = '<h2>Sales</h2>';
   const fragment = document.createDocumentFragment();
-  const div = document.createElement('div');
 
   if (!salesArray || salesArray.length === 0) {
-    console.log("No sales !");
-    div.innerHTML = `<p>No sales found for this Lego set ID.</p>`;
+    console.log("No sales!");
+    const noSalesMessage = document.createElement('p');
+    noSalesMessage.textContent = "No sales found for this Lego set ID.";
+    sectionSales.appendChild(noSalesMessage);
   } else {
-    console.log("show sales");
-    div.innerHTML = salesArray.map(sale => `
-      <div class="sale">
-        <a href="${sale.link}" target="_blank">${sale.title}</a>
-        <p>Price: ${sale.price}</p>
-        <p>Published: ${sale.published}</p>
-      </div>`
-    ).join('');
-  }
+    console.log("Show sales");
 
-  fragment.appendChild(div);
-  sectionSales.appendChild(fragment);
+    salesArray.forEach((sale) => {
+      const saleDiv = document.createElement('div');
+      saleDiv.classList.add('sale');
+
+      saleDiv.innerHTML = `
+        <img src="${sale.image || 'placeholder.png'}" alt="Sale Image">
+        <p><strong>ID/Name:</strong> ${sale.title}</p>
+        <p><strong>Buy Link:</strong> <a href="${sale.link}" target="_blank">${sale.link}</a></p>
+        <p><strong>Price:</strong> ${sale.price}</p>
+        <p><strong>Date:</strong> ${sale.published}</p>
+      `;
+
+      fragment.appendChild(saleDiv);
+    });
+
+    sectionSales.appendChild(fragment);
+  }
 };
 
 
@@ -459,28 +469,31 @@ selectLegoSetIds.addEventListener('input', async (event) => {
 
 // F11 - Open deal link in a new page
 sectionDeals.addEventListener('click', async (event) => {
-  const dealId = event.target.closest('.deal').id;
-  const deal = currentDeals.find(deal => deal.uuid === dealId);
+  // Check if the clicked element is an anchor tag (link)
+  if (event.target.tagName === 'A') {
+    const dealId = event.target.closest('.deal').id;
+    const deal = currentDeals.find((deal) => deal.uuid === dealId);
 
-  if (deal) {
-    // Open the deal link in a new tab
-    window.open(deal.link, '_blank');
-    
-    // Prevent the current page from being refreshed
+    if (deal) {
+      // Open the deal link in a new tab
+      window.open(deal.link, '_blank');
+      
+      // Prevent the current page from being refreshed
+      event.preventDefault();
+    }
+  }
+});
+
+// F12 - Open sold item link in a new page
+document.addEventListener('click', async (event) => {
+  // Check if the clicked element is an anchor tag (link)
+  if (event.target.tagName === 'A' && event.target.closest('.sale')) {
+    // Open the sale link in a new tab
+    window.open(event.target.href, '_blank');
     event.preventDefault();
   }
 });
 
-
-
-// F12 - Open sold item link in a new page
-document.addEventListener('click', async (event) => {
-  const sale = event.target.closest('.sale');
-
-  if (sale) {
-    window.open(sale.querySelector('a').href, '_blank');
-  }
-});
 
 
 
