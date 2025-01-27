@@ -158,7 +158,6 @@ const renderSales = (sales) => {
         <p><strong>Buy Link:</strong> <a href="${sale.link}" target="_blank">${sale.link}</a></p>
         <p><strong>Price:</strong> ${sale.price}</p>
         <p><strong>Date:</strong> ${sale.published}</p>
-        <span id="starDeals" class="favorite-deal">★</span>
       `;
 
       fragment.appendChild(saleDiv);
@@ -270,6 +269,30 @@ filterDiscountBtn.addEventListener('click', () => {
   renderDeals(filteredDeals);
 });
 
+/*
+//F2 - filter by best discount -> show deals with a discount of 50% or more
+const filterDealsByDiscount2 = (deals, discountThreshold) => {
+  return deals.filter(deal => {
+    return parseFloat(deal.discount) >= discountThreshold;
+  });
+};
+
+const filterDiscountBtn2 = document.getElementById('filter-discount');
+const discountSlider = document.getElementById('discount-slider');
+const discountValueDisplay = document.getElementById('discount-value');
+
+// Update the discount value display when the slider changes
+discountSlider.addEventListener('input', () => {
+  discountValueDisplay.textContent = `${discountSlider.value}%`;
+});
+
+// Filter deals based on the slider value when the button is clicked
+filterDiscountBtn2.addEventListener('click', () => {
+  const discountThreshold = parseFloat(discountSlider.value);
+  const filteredDeals = filterDealsByDiscount2(currentDeals, discountThreshold);
+  renderDeals(filteredDeals);
+});
+*/
 
 
 //F3 - filter by most commented -> show deals with more than 15 comments
@@ -506,6 +529,7 @@ const saveFavorite = (deal) => {
   }
 
   localStorage.setItem('favorites', JSON.stringify(favorites));
+  
 };
 
 // Clear favorites on page reload
@@ -520,6 +544,11 @@ sectionDeals.addEventListener('click', async (event) => {
 
   if (deal) {
     saveFavorite(deal);
+    // change the color of the star to red
+    event.target.style.color = 'red';
+  }
+  else{
+    event.target.style.color = 'gold';
   }
 });
 
