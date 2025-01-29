@@ -255,75 +255,57 @@ selectPage.addEventListener('change', async (event) => {
 });
 
 
+// F2 - Filter by discount 
+const discountSlider = document.getElementById("discount-slider");
+const discountValue = document.getElementById("discount-value");
 
-//F2 - filter by best discount -> show deals with a discount of 50% or more
-const filterDealsByDiscount = (deals) => {
-  return deals.filter(deal => {
-    return parseFloat(deal.discount) > 20;
-  });
-};
-const filterDiscountBtn = document.getElementById('filter-discount');
-
-filterDiscountBtn.addEventListener('click', () => {
-  const filteredDeals = filterDealsByDiscount(currentDeals);
-  renderDeals(filteredDeals);
-});
-
-/*
-//F2 - filter by best discount -> show deals with a discount of 50% or more
-const filterDealsByDiscount2 = (deals, discountThreshold) => {
-  return deals.filter(deal => {
-    return parseFloat(deal.discount) >= discountThreshold;
-  });
+// Function to filter deals based on the selected discount value
+const filterDealsByDiscount = (deals, minDiscount) => {
+  return deals.filter(deal => parseFloat(deal.discount) >= minDiscount);
 };
 
-const filterDiscountBtn2 = document.getElementById('filter-discount');
-const discountSlider = document.getElementById('discount-slider');
-const discountValueDisplay = document.getElementById('discount-value');
+// Update the discount value and filter deals when slider changes
+discountSlider.addEventListener("input", () => {
+  const selectedDiscount = parseInt(discountSlider.value);
+  discountValue.textContent = `${selectedDiscount}%`;
 
-// Update the discount value display when the slider changes
-discountSlider.addEventListener('input', () => {
-  discountValueDisplay.textContent = `${discountSlider.value}%`;
-});
-
-// Filter deals based on the slider value when the button is clicked
-filterDiscountBtn2.addEventListener('click', () => {
-  const discountThreshold = parseFloat(discountSlider.value);
-  const filteredDeals = filterDealsByDiscount2(currentDeals, discountThreshold);
-  renderDeals(filteredDeals);
-});
-*/
-
-
-//F3 - filter by most commented -> show deals with more than 15 comments
-const filterDealsByComments = (deals) => {
-  return deals.filter(deal => {
-    return deal.comments > 15;
-  });
-};
-
-const filterCommentsBtn = document.getElementById('filter-commented');
-
-filterCommentsBtn.addEventListener('click', () => {
-  const filteredDeals = filterDealsByComments(currentDeals);
+  // Filter and render the deals dynamically
+  const filteredDeals = filterDealsByDiscount(currentDeals, selectedDiscount);
   renderDeals(filteredDeals);
 });
 
 
 
-//F4 - filter by hot deals -> show deals with temperature above 100
-const filterDealsByTemperature = (deals) => {
-  return deals.filter(deal => {
-    return deal.temperature > 100;
-  });
+// F3 - Filter by comments using the commented slider
+const filterDealsByComments = (deals, minComments) => {
+  return deals.filter(deal => deal.comments >= minComments);
 };
 
-const filterTemperatureBtn = document.getElementById('filter-hot-deals');
+const commentedSlider = document.getElementById('commented-slider');
+const commentedValue = document.getElementById('commented-value');
 
-filterTemperatureBtn.addEventListener('click', () => {
-  const filteredDeals = filterDealsByTemperature(currentDeals);
+commentedSlider.addEventListener('input', () => {
+  const minComments = parseInt(commentedSlider.value);
+  commentedValue.textContent = `${minComments}`;
+  const filteredDeals = filterDealsByComments(currentDeals, minComments);
   renderDeals(filteredDeals);
 });
+
+// F4 - Filter by hot deals using the hot deals slider
+const filterDealsByTemperature = (deals, minTemperature) => {
+  return deals.filter(deal => deal.temperature >= minTemperature);
+};
+
+const hotDealsSlider = document.getElementById('hotdeals-slider');
+const hotDealsValue = document.getElementById('hotdeals-value');
+
+hotDealsSlider.addEventListener('input', () => {
+  const minTemperature = parseInt(hotDealsSlider.value);
+  hotDealsValue.textContent = `${minTemperature}`;
+  const filteredDeals = filterDealsByTemperature(currentDeals, minTemperature);
+  renderDeals(filteredDeals);
+});
+
 
 
 
@@ -516,8 +498,6 @@ document.addEventListener('click', async (event) => {
     event.preventDefault();
   }
 });
-
-
 
 
 

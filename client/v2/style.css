@@ -194,3 +194,55 @@ button:hover {
   font-size: 1rem;
   color: #666;
 }
+
+
+/* Discount slider styling */
+#discount-slider {
+  width: 200px;
+  margin-left: 10px;
+  background: #da291c;
+}
+
+
+#discount-value {
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+
+
+
+/* Slider progress bar (red)
+#discount-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #da291c; 
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#discount-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #da291c; /* Red thumb 
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#discount-slider {
+  -webkit-appearance: none; 
+  appearance: none;
+  width: 200px;
+  height: 8px;
+  background: #ffd700;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+#discount-value {
+  font-weight: bold;
+  margin-left: 5px;
+}*/
+

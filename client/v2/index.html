@@ -23,16 +23,28 @@
     
     <section id="options">      
       <div id="filters">
+        <!---
         <button type="button" id="filter-discount">By best discount</button>
-        <!--
+      -->
+
         <label for="discount-slider">Discount (%):</label>
         <input type="range" id="discount-slider" min="0" max="100" value="20" step="1">
         <span id="discount-value">20%</span>
-        -->
         
+        <!--
         <button type="button" id="filter-commented">By most commented</button>
         <button type="button" id="filter-hot-deals">By hot deals</button>
         <button type="button" id="filter-favorite-deals"> * Favorite deals</button>
+      -->
+        <label for="commented-slider">Comments:</label>
+        <input type="range" id="commented-slider" min="0" max="12" value="5">
+        <span id="commented-value">5</span>
+        
+        <label for="hotdeals-slider">Hot Deals:</label>
+        <input type="range" id="hotdeals-slider" min="0" max="250" value="50">
+        <span id="hotdeals-value">50</span>
+      
+      
       </div>
       <div id="sort">
         <label for="sort-select">Sort:</label>
