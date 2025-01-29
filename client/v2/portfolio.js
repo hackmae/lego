@@ -519,17 +519,26 @@ document.addEventListener('click', async (event) => {
 
 
 
-// F13 - Save a deal as a favorite
-const saveFavorite = (deal) => {
+
+
+// F13 - Save a deal as favorite
+const toggleFavorite = (deal, starElement) => {
   let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
   // Check if the deal is already in favorites
-  if (!favorites.some(fav => fav.uuid === deal.uuid)) {
+  const index = favorites.findIndex(fav => fav.uuid === deal.uuid);
+
+  if (index !== -1) {
+    // Remove from favorites
+    favorites.splice(index, 1);
+    starElement.style.color = 'gold'; // Reset star color
+  } else {
+    // Add to favorites
     favorites.push(deal);
+    starElement.style.color = 'red'; // Turn star red
   }
 
   localStorage.setItem('favorites', JSON.stringify(favorites));
-  
 };
 
 // Clear favorites on page reload
@@ -537,20 +546,20 @@ window.addEventListener('load', () => {
   localStorage.removeItem('favorites');
 });
 
-// Event listener for saving a deal as favorite
-sectionDeals.addEventListener('click', async (event) => {
-  const dealId = event.target.closest('.deal')?.id;
-  const deal = currentDeals.find(deal => deal.uuid === dealId);
+// Event listener for saving/removing a deal as favorite
+sectionDeals.addEventListener('click', (event) => {
+  // Ensure only the star is clicked
+  if (event.target.classList.contains('favorite-deal')) {
+    const dealId = event.target.closest('.deal')?.id;
+    const deal = currentDeals.find(deal => deal.uuid === dealId);
 
-  if (deal) {
-    saveFavorite(deal);
-    // change the color of the star to red
-    event.target.style.color = 'red';
-  }
-  else{
-    event.target.style.color = 'gold';
+    if (deal) {
+      toggleFavorite(deal, event.target);
+    }
   }
 });
+
+
 
 
 
