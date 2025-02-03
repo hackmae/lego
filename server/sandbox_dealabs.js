@@ -1,11 +1,11 @@
 /* eslint-disable no-console, no-process-exit */
-const avenuedelabrique = require('./websites/avenuedelabrique');
+const dealabs = require('./websites/dealabs');
 
-async function sandbox (website = 'https://www.avenuedelabrique.com/nouveautes-lego') {
+async function sandbox (website = 'https://www.dealabs.com/groupe/lego') {
   try {
     console.log(`🕵️‍♀️  browsing ${website} website`);
 
-    const deals = await avenuedelabrique.scrape(website);
+    const deals = await dealabs.scrape(website);
 
     console.log(deals);
     console.log('done');
