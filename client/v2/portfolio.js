@@ -75,6 +75,7 @@ const fetchDeals = async (page = 1, size = 6) => {
 const renderDeals = deals => {
   const fragment = document.createDocumentFragment();
   const div = document.createElement('div');
+  div.className = 'deals-container';
   const template = deals
     .map(deal => {
       return `
@@ -255,6 +256,7 @@ selectPage.addEventListener('change', async (event) => {
 });
 
 
+
 // F2 - Filter by discount 
 const discountSlider = document.getElementById("discount-slider");
 const discountValue = document.getElementById("discount-value");
@@ -291,6 +293,8 @@ commentedSlider.addEventListener('input', () => {
   renderDeals(filteredDeals);
 });
 
+
+
 // F4 - Filter by hot deals using the hot deals slider
 const filterDealsByTemperature = (deals, minTemperature) => {
   return deals.filter(deal => deal.temperature >= minTemperature);
@@ -305,7 +309,6 @@ hotDealsSlider.addEventListener('input', () => {
   const filteredDeals = filterDealsByTemperature(currentDeals, minTemperature);
   renderDeals(filteredDeals);
 });
-
 
 
 
