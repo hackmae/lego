@@ -9,26 +9,26 @@ const cheerio = require('cheerio');
 const parse = data => {
   const $ = cheerio.load(data, {'xmlMode': true});
 
-  return $('div.prods a')
+  return $('div.content-list')
     .map((i, element) => {
       const price = parseFloat(
         $(element)
-          .find('span.prodl-prix span')
+          .find('span.text--b size--all-xl size--fromW3-xxl thread-price')
           .text()
       );
 
       const discount = Math.abs(parseInt(
         $(element)
-          .find('span.prodl-reduc')
+          .find('span.class="textBadge bRad--a-m flex--inline text--b boxAlign-ai--all-c size--all-s size--fromW3-m space--h-1 space--ml-1 space--mr-0 textBadge--green"')
           .text()
       ));
 
-      const img = 'https://www.avenuedelabrique.com/img/'+$(element)
-        .find('span.prodl-img img')
-        .attr('data-src');
+      const img = $(element)
+        .find('imgFrame imgFrame--noBorder imgFrame--darken-new')
+        .attr('src');
 
-      const libelle = $(element)
-        .find('span.prodl-libelle')
+      const temperature = $(element)
+        .find('span.overflow--wrap-off')
         .text();
 
       return {
@@ -36,7 +36,7 @@ const parse = data => {
         price,
         'title': $(element).attr('title'),
         img,
-        'libelle': libelle.replace(/\s\s+/g, ' ').trim(),
+        temperature,
       };
     })
     .get();
