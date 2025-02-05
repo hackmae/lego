@@ -69,14 +69,14 @@ input {
 }
 
 button {
-  background-color: #ffd700;
-  color: black;
+  background-color: #0075FF;
+  color: white;
   font-weight: bold;
   cursor: pointer;
 }
 
 button:hover {
-  background-color: #e6c200;
+  background-color: #140768;
 }
 
 /* Deals section */
@@ -111,47 +111,36 @@ button:hover {
   border-radius: 8px;
 }
 
-.deals-container{
+.deals-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 colonnes toujours bien réparties */
-  gap: 20px; /* Espacement uniforme entre les cartes */
-  padding: 20px; /* Ajoute un espace intérieur */
-  max-width: 1200px; /* Limite la largeur maximale */
-  margin: 0 auto; /* Centre parfaitement le conteneur */
-  box-sizing: border-box; /* Inclut le padding dans la largeur totale */
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 20px; /* Spacing between cards */
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* Deal information styling */
-#deals .deal p {
-  margin: 5px 0;
+/* Sales section styled similarly to deals */
+#vinted-sales {
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Links inside deals */
-#deals .deal a {
-  color: #da291c;
-  text-decoration: none;
-  font-weight: bold;
+/* Sales container (grid layout) */
+.sales-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns for consistent layout */
+  gap: 20px; /* Space between sales cards */
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-#deals .deal a:hover {
-  text-decoration: underline;
-}
-
-/* Favorite deal star */
-#deals .deal .favorite-deal {
-  cursor: pointer;
-  font-size: 1.5rem;
-  color: gold;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-#deals .deal .favorite-deal:hover {
-  color: #e6c200;
-}
-
-/* Sales section */
+/* Individual sale cards styled like deals */
 #vinted-sales .sale {
   display: flex;
   flex-direction: column;
@@ -161,22 +150,16 @@ button:hover {
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  margin: 10px 0;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
-/* Image styling in sales */
-#vinted-sales .sale img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-/* Text in sales */
+/* Sale content styling */
 #vinted-sales .sale p {
   margin: 5px 0;
+  font-size: 14px; /* Ensure readability */
+  text-align: center;
 }
 
 /* Links inside sales */
@@ -184,6 +167,7 @@ button:hover {
   color: #da291c;
   text-decoration: none;
   font-weight: bold;
+  word-break: break-word; /* Prevent long URLs from overflowing */
 }
 
 #vinted-sales .sale a:hover {
@@ -194,10 +178,8 @@ button:hover {
 #starDeals {
   cursor: pointer;
   font-size: 1.5rem;
-  /*color: gold;*/
   margin-right: 10px;
 }
-
 
 /* No sales message styling */
 #vinted-sales p {
@@ -205,24 +187,33 @@ button:hover {
   color: #666;
 }
 
-
-/* Discount slider styling */
-#discount-slider {
-  width: 200px;
-  margin-left: 10px;
-  background: #da291c;
+/* Updated Filters and Sliders CSS */
+#filters {
+  display: flex;
+  align-items: center; /* Align sliders and dropdowns vertically */
+  gap: 20px; /* Space between filters */
+  flex-wrap: wrap; /* Wrap filters on smaller screens */
 }
 
+/* Individual slider styling */
+.slider-container {
+  display: flex;
+  align-items: center; /* Align label, slider, and value vertically */
+  gap: 10px; /* Space between elements in each filter */
+}
 
-#discount-value {
+.slider-container label {
+  white-space: nowrap; /* Prevent wrapping of labels */
   font-weight: bold;
-  margin-left: 5px;
+  min-width: 100px; /* Set a consistent width for labels */
 }
 
+.slider-container input[type="range"] {
+  flex: 1; /* Sliders take up available horizontal space */
+}
 
-
-
-
-
-
-
+.slider-container span {
+  min-width: 50px; /* Consistent width for value display */
+  text-align: left; /* Align text to the left */
+  font-weight: bold;
+}

@@ -140,7 +140,9 @@ const renderSales = (sales) => {
 
   const sectionSales = document.querySelector('#vinted-sales');
   sectionSales.innerHTML = '<h2>Sales</h2>';
-  const fragment = document.createDocumentFragment();
+
+  const salesContainer = document.createElement('div');
+  salesContainer.className = 'sales-container';
 
   if (!salesArray || salesArray.length === 0) {
     console.log("No sales!");
@@ -156,17 +158,18 @@ const renderSales = (sales) => {
 
       saleDiv.innerHTML = `
         <p><strong>ID/Name:</strong> ${sale.title}</p>
-        <p><strong>Buy Link:</strong> <a href="${sale.link}" target="_blank">${sale.link}</a></p>
         <p><strong>Price:</strong> ${sale.price}</p>
         <p><strong>Date:</strong> ${sale.published}</p>
+        <p><strong>Buy Link:</strong> <a href="${sale.link}" target="_blank">${sale.link}</a></p>
       `;
 
-      fragment.appendChild(saleDiv);
+      salesContainer.appendChild(saleDiv);
     });
 
-    sectionSales.appendChild(fragment);
+    sectionSales.appendChild(salesContainer);
   }
 };
+
 
 
 
@@ -557,5 +560,11 @@ const filterFavoriteBtn = document.getElementById('filter-favorite-deals');
 
 filterFavoriteBtn.addEventListener('click', () => {
   const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-  renderDeals(favorites);
+  //null error
+  if (favorites === null) {
+    return;
+  }
+  else {
+    renderDeals(favorites);
+  }
 });

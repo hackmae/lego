@@ -21,41 +21,48 @@
       </div>
     </section>
     
-    <section id="options">      
+    <section id="options">
       <div id="filters">
-        <!---
-        <button type="button" id="filter-discount">By best discount</button>
-      -->
-
-        <label for="discount-slider">Discount (%):</label>
-        <input type="range" id="discount-slider" min="0" max="100" value="0" step="1">
-        <span id="discount-value">0%</span>
-        
-        <!--
-        <button type="button" id="filter-commented">By most commented</button>
-        <button type="button" id="filter-hot-deals">By hot deals</button>
-        <button type="button" id="filter-favorite-deals"> * Favorite deals</button>
-      -->
-        <label for="commented-slider">Comments:</label>
-        <input type="range" id="commented-slider" min="0" max="12" value="0">
-        <span id="commented-value">0</span>
-        
-        <label for="hotdeals-slider">Hot Deals:</label>
-        <input type="range" id="hotdeals-slider" min="0" max="250" value="0">
-        <span id="hotdeals-value">0</span>
-      
-      
+    
+        <!-- Discount Slider -->
+        <div class="slider-container">
+          <label for="discount-slider">Discount (%):</label>
+          <input type="range" id="discount-slider" min="0" max="100" value="0" step="1">
+          <span id="discount-value">0%</span>
+        </div>
+    
+        <!-- Comments Slider -->
+        <div class="slider-container">
+          <label for="commented-slider">Comments:</label>
+          <input type="range" id="commented-slider" min="0" max="12" value="0">
+          <span id="commented-value">0</span>
+        </div>
+    
+        <!-- Hot Deals Slider -->
+        <div class="slider-container">
+          <label for="hotdeals-slider">Hot Deals:</label>
+          <input type="range" id="hotdeals-slider" min="0" max="250" value="0">
+          <span id="hotdeals-value">0</span>
+        </div>
+    
+        <!-- Sort Dropdown -->
+        <div id="sort">
+          <label for="sort-select">Sort:</label>
+          <select name="sort" id="sort-select">
+            <option value="price-asc">Cheaper</option>
+            <option value="price-desc">Expensive</option>
+            <option value="date-asc">Recently published</option>
+            <option value="date-desc">Anciently published</option>
+          </select>
+        </div>
       </div>
-      <div id="sort">
-        <label for="sort-select">Sort:</label>
-        <select name="sort" id="sort-select">
-          <option value="price-asc">Cheaper</option>
-          <option value="price-desc">Expensive</option>
-          <option value="date-asc">Recently published</option>
-          <option value="date-desc">Anciently published</option>
-        </select>
-      </div>
+    
+      <!-- Favorite Deals Button -->
+      <button type="button" id="filter-favorite-deals">* Favorite deals</button>
     </section>
+    
+    
+
     <section id="lego">
       <h2>Lego sets</h2>
       <div>
