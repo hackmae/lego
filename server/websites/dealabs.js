@@ -1,63 +1,50 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 
+
 /**
  * Parse webpage data response
  * @param  {String} data - HTML response
  * @return {Array} deals
  */
 const parse = data => {
-  const $ = cheerio.load(data);
+  const $ = cheerio.load(data, {'xmlMode': true});
 
-  return $('article.thread') // Adjusted selector to match Dealabs structure
+  return $('div.js-threadList article') 
     .map((i, element) => {
-      const title = $(element)
-        .find('div.threadListCard-header a') // Updated selector for title
-        .text()
-        .trim();
+      const link = $(element)
+        .find('a[data-t="threadLink"]')
+        .attr('href');
 
-      const price = parseFloat(
-        $(element)
-          .find('span.thread-price') // Updated selector for price
-          .text()
-          .replace(/[^0-9,.]/g, '')
-          .replace(',', '.')
-      );
+      const data = JSON.parse($(element)
+        .find('div.js-vue2')
+        .attr('data-vue2'));
 
-      const discount = parseInt(
-        $(element)
-          .find('span.chip-chip--type-default') // Updated selector for discount
-          .text()
-          .replace(/[^0-9-]/g, ''),
-        10
-      );
+      //console.log(data);
 
-      const img = $(element)
-        .find('div.threadListCard-image img') // Updated selector for image
-        .attr('data-src') || $(element).find('div.threadListCard-image img').attr('src');
+      const thread = data.props.thread|| null;
+      const retail = thread.nextBestPrice|| null;
+      const price = thread.price|| null;
+      const discount = parseInt((1 - price / retail) * 100)|| null;
+      const temperature = +thread.temperature|| null;
+      const image = 'https://static-pepper.dealabs.com/threads/raw/${thread.mainImage.slotId}/${thread.mainImage.name}/re/300x300/qt/60/${thread.mainImage.name}.${thread.mainImage.ext}';
+      const comments = +thread.commentCount|| 0;
+      const published = thread.publishedAt|| null;
+      const title = thread.title|| null;
+      const id = thread.threadId || null; 
 
-      const temperature = $(element)
-        .find('div.vote-box .vote-box__temp') // Updated selector for temperature
-        .text()
-        .trim();
-
-      const comments = $(element)
-        .find('div.threadListCard-footer a') // Updated selector for comments
-        .text()
-        .trim();
-
-      const date = $(element)
-        .find('time') // Updated selector for date
-        .attr('datetime') || $(element).find('time').text().trim();
 
       return {
-        title,
-        price: isNaN(price) ? null : price,
-        discount: isNaN(discount) ? null : discount,
-        img,
+        link, 
+        retail,
+        price,
+        discount,
         temperature,
+        image,
         comments,
-        date,
+        published,
+        title,
+        id,
       };
     })
     .get();
@@ -83,7 +70,7 @@ module.exports.scrape = async url => {
     const body = await response.text();
     return parse(body);
   } catch (error) {
-    console.error(`Error scraping ${url}:`, error.message);
+    console.error(`Error scraping ${url}:, ${error.message}`);
     return null;
   }
 };

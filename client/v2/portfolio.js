@@ -512,7 +512,7 @@ const toggleFavorite = (deal, starElement) => {
   let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
   // Check if the deal is already in favorites
-  const index = favorites.findIndex(fav => fav.uuid === deal.uuid);
+  const index = favorites.findIndex((fav) => fav.uuid === deal.uuid);
 
   if (index !== -1) {
     // Remove from favorites
@@ -527,9 +527,12 @@ const toggleFavorite = (deal, starElement) => {
   localStorage.setItem('favorites', JSON.stringify(favorites));
 };
 
-// Clear favorites on page reload
+// Clear all favorites on page reload
 window.addEventListener('load', () => {
-  localStorage.removeItem('favorites');
+  localStorage.removeItem('favorites'); // Clear favorites
+  document.querySelectorAll('.favorite-deal').forEach((starElement) => {
+    starElement.style.color = 'gold'; // Reset all stars to gold
+  });
 });
 
 // Event listener for saving/removing a deal as favorite
@@ -537,7 +540,7 @@ sectionDeals.addEventListener('click', (event) => {
   // Ensure only the star is clicked
   if (event.target.classList.contains('favorite-deal')) {
     const dealId = event.target.closest('.deal')?.id;
-    const deal = currentDeals.find(deal => deal.uuid === dealId);
+    const deal = currentDeals.find((deal) => deal.uuid === dealId);
 
     if (deal) {
       toggleFavorite(deal, event.target);
@@ -545,26 +548,17 @@ sectionDeals.addEventListener('click', (event) => {
   }
 });
 
-
-
-
-
 // F14 - Filter deals by favorite
-const filterDealsByFavorite = (deals) => {
-  return deals.filter(deal => {
-    return deal.temperature > 100;
-  });
-};
-
 const filterFavoriteBtn = document.getElementById('filter-favorite-deals');
 
 filterFavoriteBtn.addEventListener('click', () => {
   const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-  //null error
-  if (favorites === null) {
+
+  if (!favorites.length) {
+    console.log('No favorite deals found.');
+    renderDeals([]); // Clear the displayed deals
     return;
   }
-  else {
-    renderDeals(favorites);
-  }
+
+  renderDeals(favorites); // Render only favorite deals
 });

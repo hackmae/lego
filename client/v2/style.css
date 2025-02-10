@@ -32,9 +32,11 @@ h2 {
   padding-bottom: 5px;
   margin-bottom: 15px;
   color: #333;
+  text-align: center;
+  font-size: 1.5rem;
 }
 
-/* Pages and options layout */
+/* Layout for pages, options, indicators, and lego sections */
 #pages,
 #options,
 #indicators,
@@ -45,6 +47,7 @@ h2 {
   align-items: center;
 }
 
+/* Sort and indicator div styling */
 #sort div,
 #indicators div {
   background: #da291c;
@@ -79,23 +82,25 @@ button:hover {
   background-color: #140768;
 }
 
-/* Deals section */
-#deals {
-  padding: 15px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+/* Deals container grid layout */
+.deals-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 20px; /* Space between cards */
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* Individual deal cards */
-#deals .deal {
+/* Individual deal card styling */
+.deal {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 10px;
   padding: 15px;
-  margin: 10px 0;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #fff;
@@ -103,33 +108,15 @@ button:hover {
   position: relative;
 }
 
-/* Image styling in deals */
-#deals .deal img {
+/* Deal image styling */
+.deal img {
   width: 100px;
   height: 100px;
   object-fit: cover;
   border-radius: 8px;
 }
 
-.deals-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns */
-  gap: 20px; /* Spacing between cards */
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
-/* Sales section styled similarly to deals */
-#vinted-sales {
-  padding: 15px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* Sales container (grid layout) */
+/* Sale container styled similarly to deals */
 .sales-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 columns for consistent layout */
@@ -140,7 +127,7 @@ button:hover {
   box-sizing: border-box;
 }
 
-/* Individual sale cards styled like deals */
+/* Individual sale card styling */
 #vinted-sales .sale {
   display: flex;
   flex-direction: column;
@@ -160,6 +147,29 @@ button:hover {
   margin: 5px 0;
   font-size: 14px; /* Ensure readability */
   text-align: center;
+}
+
+/* Favorite deal star styling */
+.deal .favorite-deal,
+.sale .favorite-deal {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: gold; /* Default non-favorite color */
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* Marked favorite state */
+.deal .favorite-deal.active,
+.sale .favorite-deal.active {
+  color: red; /* Color for favorite */
+}
+
+/* Hover state for all stars */
+.deal .favorite-deal:hover,
+.sale .favorite-deal:hover {
+  color: #e6c200; /* Gold hover color */
 }
 
 /* Links inside sales */
@@ -185,9 +195,10 @@ button:hover {
 #vinted-sales p {
   font-size: 1rem;
   color: #666;
+  text-align: center;
 }
 
-/* Updated Filters and Sliders CSS */
+/* Filters and sliders */
 #filters {
   display: flex;
   align-items: center; /* Align sliders and dropdowns vertically */
