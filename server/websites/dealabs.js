@@ -68,6 +68,11 @@ module.exports.scrape = async url => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const body = await response.text();
+    //put in a json file
+    const fs = require('fs');
+    fs.writeFileSync('Alldeals.json', JSON.stringify(body, null, 2), 'utf-8');
+    console.log('Deals OK');
+
     return parse(body);
   } catch (error) {
     console.error(`Error scraping ${url}:, ${error.message}`);
