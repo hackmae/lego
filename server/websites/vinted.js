@@ -2,45 +2,6 @@
 const cheerio = require('cheerio');
 const { v5: uuidv5 } = require('uuid');
 
-/**
- * Parse webpage HTML response
- * @param {String} data - html response
- * @return {Object} deals
- */
-const parseHTML = data => {
-  const $ = cheerio.load(data, { 'xmlMode': true });
-
-  return $('div.prods a')
-    .map((i, element) => {
-      const price = parseFloat($(element).find('span.prodl-prix span').text());
-      const discount = Math.abs(parseInt($(element).find('span.prodl-reduc').text()));
-
-      return {
-        discount,
-        price,
-        'title': $(element).attr('title')
-      };
-    })
-    .get();
-};
-
-/**
- * Scrape a given url page
- * @param {String} url - url to parse
- * @returns 
- */
-/*
-const scrape = async url => {
-  const response = await fetch(url);
-
-  if (response.ok) {
-    const body = await response.text();
-    return parseHTML(body);
-  }
-
-  console.error(response);
-  return null;
-};*/
 
 // Code for scraping with predefined cookies and headers
 const scrapeWithCookies = async searchText => {
@@ -98,13 +59,15 @@ const parseJSON = data => {
       const price = item.total_item_price;
       const photo = item;
       const published = photo.high_resolution && photo.high_resolution.timestamp;
+      const status = item.status; 
 
       return {
         link,
         'price': price.amount,
         'title': item.title,
         'published': new Date(published * 1000).toUTCString(),
-        'uuid': uuidv5(link, uuidv5.URL)
+        'status': status,
+        //'uuid': uuidv5(link, uuidv5.URL)
       };
     });
   } catch (error) {
@@ -118,29 +81,3 @@ module.exports = {
   //scrape,
   scrapeWithCookies
 };
-
-/**
- * Scrape a given URL page
- * @param {String} url - URL to parse
- * @returns {Promise<Array|null>} Extracted deals
- */
-/*
-module.exports.scrape = async url => {
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Referer': 'https://www.google.com/',
-      },
-    });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-    const body = await response.text();
-    return parse(body);
-  } catch (error) {
-    console.error(`Error scraping ${url}:, ${error.message}`);
-    return null;
-  }
-};*/
