@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
+const fs = require('fs');
 
 
 /**
@@ -29,7 +30,7 @@ const parse = data => {
       const temperature = +thread.temperature|| null;
       const image = 'https://static-pepper.dealabs.com/threads/raw/${thread.mainImage.slotId}/${thread.mainImage.name}/re/300x300/qt/60/${thread.mainImage.name}.${thread.mainImage.ext}';
       const comments = +thread.commentCount|| 0;
-      const published = thread.publishedAt|| null;
+      const published = new Date(thread.publishedAt *1000)|| null;
       const title = thread.title|| null;
       const id = thread.threadId || null; 
 
@@ -68,12 +69,12 @@ module.exports.scrape = async url => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const body = await response.text();
+    const parsedDeals = parse(body);
     //put in a json file
-    const fs = require('fs');
-    fs.writeFileSync('Alldeals.json', JSON.stringify(body, null, 2), 'utf-8');
+    fs.writeFileSync('Alldeals.json', JSON.stringify(parsedDeals, null, 2), 'utf-8');
     console.log('Deals OK');
 
-    return parse(body);
+    return parsedDeals;
   } catch (error) {
     console.error(`Error scraping ${url}:, ${error.message}`);
     return null;
