@@ -97,25 +97,38 @@ async function findSalesForLegoSet(db, legoSetId) {
 }
 
 
-
-
 // Recent sales (< 3 weeks)
 async function findRecentSales(db) {
     const threeWeeksAgo = new Date();
     threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
-
-    console.log("Date limite pour la recherche :", threeWeeksAgo);
-
+    console.log("Last date acceptable for the search :", threeWeeksAgo);
     const collection = db.collection('sales');
 
-    // Afficher toutes les ventes triées par date
-    const allSales = await collection.find().sort({ date: -1 }).toArray();
-    console.log("Toutes les ventes triées par date :", allSales);
+    const sales = await collection.aggregate([
+        {
+            $addFields: {
+                dateAsDate: {
+                    $dateFromString: {
+                        dateString: "$published", // Champ contenant la date
+                        format: "%d/%m/%Y %H:%M:%S" // Format correspondant à tes dates
+                    }
+                }
+            }
+        },
+        {
+            $match: {
+                dateAsDate: { $gte: threeWeeksAgo }
+            }
+        },
+        {
+            $sort: { dateAsDate: -1 }
+        }
+    ]).toArray();
 
-    // Filtrer les ventes < 3 semaines
-    const sales = await collection.find({ date: { $gte: threeWeeksAgo } }).toArray();
-    console.log("Ventes trouvées (< 3 semaines) :", sales);
+    console.log("Sales (< 3 weeks) :", sales);
 }
+
+
 
 // Exécution principale
 async function main() {
@@ -145,8 +158,7 @@ async function main() {
     console.log(` Trouver toutes les ventes pour le Lego Set ID: ${legoSetId}`);
     await findSalesForLegoSet(db, legoSetId);
 
-    console.log("\n========== VENTES RÉCENTES (< 3 SEMAINES) ==========\n");
-    console.log("Trouver les ventes ajoutées il y a moins de 3 semaines :");
+    console.log("\n========== RECENT SALES (< 3 weeks) ==========\n");
     await findRecentSales(db);
 
     await closeDB(client);
