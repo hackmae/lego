@@ -1,43 +1,12 @@
 [
   {
-    "link": "https://www.vinted.fr/items/5867606218-support-mural-lego-panigale-v4s-42202",
-    "price": "5.95",
-    "title": "Support mural lego Panigale V4s ( 42202)",
-    "published": "23/02/2025 20:24:14",
-    "status": "Neuf sans étiquette",
-    "id": "42202"
-  },
-  {
-    "link": "https://www.vinted.fr/items/5948766965-brique-a-empiler-type-lego-technic-moto-ducati-panigale-v4-s",
-    "price": "105.7",
-    "title": "Brique à empiler type « lego technic Moto Ducati Panigale V4 S »",
-    "published": "11/03/2025 09:10:33",
-    "status": "Neuf sans étiquette",
-    "id": "42202"
-  },
-  {
-    "link": "https://www.vinted.fr/items/5829787608-support-mural-lego-technique-bmw-m1000rr",
-    "price": "5.95",
-    "title": "Support mural lego technique BMW M1000rr",
-    "published": "17/02/2025 05:14:25",
-    "status": "Neuf sans étiquette",
-    "id": "42202"
-  },
-  {
-    "link": "https://www.vinted.fr/items/5868590764-figurine-tintin-rastapopoulos-a-la-cravache-14-cm",
-    "price": "26.95",
-    "title": "Figurine Tintin - Rastapopoulos à la Cravache (14 cm)",
-    "published": "24/02/2025 00:42:55",
-    "status": "Très bon état",
-    "id": "42202"
-  },
-  {
     "link": "https://www.vinted.fr/items/5935416102-lego-42202-ducati-panigale",
-    "price": "167.65",
+    "price": "163.45",
     "title": "Lego 42202 Ducati Panigale",
     "published": "08/03/2025 21:44:30",
     "status": "Neuf avec étiquette",
-    "id": "42202"
+    "id": "42202",
+    "brand": "LEGO"
   },
   {
     "link": "https://www.vinted.fr/items/5863472729-lego-motocicletta-ducati-panigale-v4-s-set-42202",
@@ -45,7 +14,8 @@
     "title": "Lego Motocicletta Ducati Panigale V4 S set 42202",
     "published": "23/02/2025 12:58:42",
     "status": "Neuf sans étiquette",
-    "id": "42202"
+    "id": "42202",
+    "brand": "LEGO"
   },
   {
     "link": "https://www.vinted.fr/items/5739682259-vendo-lego-42202-ducati-panigale-v4-misb",
@@ -53,7 +23,8 @@
     "title": "Vendo lego 42202 ducati panigale v4 misb",
     "published": "31/01/2025 11:34:43",
     "status": "Neuf avec étiquette",
-    "id": "42202"
+    "id": "42202",
+    "brand": "LEGO"
   },
   {
     "link": "https://www.vinted.fr/items/5824317456-lego-motocicletta-ducati-panigale-v4-s-set-42202",
@@ -61,7 +32,8 @@
     "title": "Lego Motocicletta Ducati Panigale V4 S set 42202",
     "published": "16/02/2025 12:32:17",
     "status": "Neuf sans étiquette",
-    "id": "42202"
+    "id": "42202",
+    "brand": "LEGO"
   },
   {
     "link": "https://www.vinted.fr/items/5857464572-lego-42202-ducati-panigali",
@@ -69,7 +41,8 @@
     "title": "Lego 42202 Ducati Panigali",
     "published": "22/02/2025 13:03:27",
     "status": "Neuf avec étiquette",
-    "id": "42202"
+    "id": "42202",
+    "brand": "LEGO"
   },
   {
     "link": "https://www.vinted.fr/items/5843427221-lego-42202",
@@ -77,15 +50,8 @@
     "title": "Lego 42202",
     "published": "19/02/2025 16:26:10",
     "status": "Neuf avec étiquette",
-    "id": "42202"
-  },
-  {
-    "link": "https://www.vinted.fr/items/5910662550-lego-ducati-panigale-v4-s-set-42202-nuovo-originale",
-    "price": "179.2",
-    "title": "Lego Ducati Panigale V4 S Set 42202 nuovo originale",
-    "published": "03/03/2025 22:50:45",
-    "status": "Très bon état",
-    "id": "42202"
+    "id": "42202",
+    "brand": "LEGO"
   },
   {
     "link": "https://www.vinted.fr/items/5719531204-lego-42130-bmw-m-1000-rr-nuovo-s-sigillato",
@@ -93,14 +59,7 @@
     "title": "Lego 42130 BMW M 1000 RR Nuovo s sigillato",
     "published": "27/01/2025 10:53:18",
     "status": "Neuf avec étiquette",
-    "id": "42202"
-  },
-  {
-    "link": "https://www.vinted.fr/items/2852180590-lot-18-rails-roco-pour-train-electrique-neuves",
-    "price": "37.45",
-    "title": "Lot 18 rails ROCO pour train électrique neuves",
-    "published": "31/03/2023 20:48:00",
-    "status": "Neuf sans étiquette",
-    "id": "42202"
+    "id": "42202",
+    "brand": "LEGO"
   }
 ]
