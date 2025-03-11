@@ -93,10 +93,42 @@ async function findDealsSortedByDate(db) {
 
 // Sales for a specific Lego Set
 async function findSalesForLegoSet(db, legoSetId) {
-    const collection = db.collection('sales');
-    const sales = await collection.find({ legoSetId }).toArray();
-    console.log(`Sales for Lego Set ${legoSetId}:`, sales);
+    try {
+        if (!legoSetId) {
+            console.log("Invalid Lego Set ID provided.");
+            return;
+        }
+
+        const collection = db.collection('sales');
+
+        console.log(`Searching for sales with ID: ${legoSetId}...`);
+
+        // Recherche basée sur le champ `id`
+        const sales = await collection.find({ id: legoSetId }).limit(100).toArray(); 
+
+        if (sales.length > 0) {
+            console.log(`Found ${sales.length} sales for Lego Set ${legoSetId}:\n`);
+
+            sales.forEach((sale, index) => {
+                console.log(`--- Sale #${index + 1} ---`);
+                console.log(`ID: ${sale.id}`);
+                console.log(`Title: ${sale.title}`);
+                console.log(`Price: ${sale.price}€`);
+                console.log(`Published: ${sale.published}`);
+                console.log(`Status: ${sale.status}`);
+                console.log(`Link: ${sale.link}\n`);
+            });
+
+        } else {
+            console.log(`No sales found for Lego Set ${legoSetId}.`);
+        }
+    } catch (error) {
+        console.error(`Error finding sales for Lego Set ${legoSetId}:`, error);
+    }
 }
+
+
+
 
 
 // Recent sales (< 3 weeks)
@@ -142,18 +174,18 @@ async function main() {
 
     console.log("\n========== BEST DEALS ==========\n");
     console.log("Best dicount :");
-    //await findBestDiscountDeals(db);
+    await findBestDiscountDeals(db);
 
     console.log("\n========== MOST COMMENTED DEALS ==========\n");
-    //await findMostCommentedDeals(db);
+    await findMostCommentedDeals(db);
 
     console.log("\n========== DEALS BY PRICE ==========\n");
     console.log(" Deals by price (ascending) :");
-    //await findDealsSortedByPrice(db);
+    await findDealsSortedByPrice(db);
 
     console.log("\n========== DEALS BY DATE ==========\n");
     console.log("Find deals by date (most recent first) :");
-    //await findDealsSortedByDate(db);
+    await findDealsSortedByDate(db);
 
     const legoSetId = "42182";
     console.log(`\n========== VENTES POUR LE LEGO SET ${legoSetId} ==========\n`);
