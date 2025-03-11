@@ -1,4 +1,6 @@
 const {MongoClient} = require('mongodb');
+const dealabs = require('./websites/dealabs');
+const vinted = require('./websites/vinted');
 const fs = require('fs').promises;
 const path = require('path');
 
