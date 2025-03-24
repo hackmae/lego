@@ -32,7 +32,11 @@ const parse = data => {
       const comments = +thread.commentCount|| 0;
       const published = new Date(thread.publishedAt *1000)|| null;
       const title = thread.title|| null;
-      const id = thread.threadId || null; 
+
+      const idMatch = link ? link.match(/\b\d{5}\b/) : null;
+      const id = idMatch ? idMatch[0] : thread?.threadId || null;
+
+      //const id = thread.threadId || null; 
 
 
       return {

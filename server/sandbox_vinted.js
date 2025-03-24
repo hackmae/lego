@@ -1,76 +1,99 @@
 /* eslint-disable no-console, no-process-exit */
 const vinted = require('./websites/vinted');
 const fs = require('fs');
+const path = require('path');
 
 // Lire le fichier AllDeals et extraire les IDs
 const allDeals = JSON.parse(fs.readFileSync('./AllDeals.json', 'utf-8'));
 
 const allVintedDeals = [];
 
-// Récupération des IDs uniques depuis AllDeals
+
 const Lego_set_ids = allDeals.map(deal => {
-  const match = deal.title.match(/\b\d{4,6}\b/); // Cherche un ID LEGO (4 à 6 chiffres)
-  return match ? match[0] : null;
-}).filter(id => id !== null);
+  let match = deal.title.match(/\((\d{4,6})\)/); // Priorité aux nombres entre parenthèses
+
+  if (!match) {
+      // Sinon, capturer le premier nombre de 4-6 chiffres disponible dans le texte
+      match = deal.title.match(/\b\d{4,6}\b/);
+  }
+
+  return match ? match[1] || match[0] : null; // Prendre la valeur capturée
+}).filter(id => id !== null); // Filtrer les résultats null
 
 // Affichage du tableau d'IDs
 console.log("Liste des IDs :");
 console.log(Lego_set_ids);
 
-// Fonction principale pour scraper une recherche Vinted
-async function sandbox(legoSetId) {
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+async function scrapeVintedWithPagination(legoSetId) {
+  let currentPage = 1;
+  let totalResults = 0;
+  const maxPages = 10; // Limite le nombre de pages pour éviter le blocage
+
   try {
-    const url = `https://www.vinted.fr/api/v2/catalog/items?page=1&per_page=96&time=1739194586&search_text=${legoSetId}&catalog_ids=&size_ids=&brand_ids=&status_ids=&material_ids=`;
+      while (currentPage <= maxPages) {
+          console.log(`Scraping page ${currentPage} for Lego Set ID: ${legoSetId}...`);
 
-    console.log(`🕵️‍♂️ Scraping Vinted for Lego Set ID: ${legoSetId}...`);
-    
-    const deals = await vinted.scrapeWithCookies(legoSetId);
+          const deals = await vinted.scrapeWithCookies(legoSetId, currentPage);
 
-    if (deals && deals.length > 0) {
-      console.log(`Found ${deals.length} deals for Lego Set ID: ${legoSetId}`);
+          if (deals && deals.length > 0) {
+              totalResults += deals.length;
+              allVintedDeals.push(...deals);
 
-      // Sauvegarde dans un fichier nommé automatiquement
-      fs.writeFileSync(
-        `./vinted-${legoSetId}.json`,
-        JSON.stringify(deals, null, 2),
-        'utf-8'
-      );
-      allVintedDeals.push(...deals);
+              console.log(`Found ${deals.length} new deals on page ${currentPage}`);
 
-      console.log(`Results saved in: ./vinted-${legoSetId}.json`);
-    } else {
-      console.log(`No deals found for Lego Set ID: ${legoSetId}`);
-    }
+              // Sauvegarde dans un fichier séparé par ID
+              fs.writeFileSync(
+                  `./vinted-${legoSetId}.json`,
+                  JSON.stringify(deals, null, 2),
+                  'utf-8'
+              );
+          } else {
+              console.log(`No more results for page ${currentPage}...`);
+              break;
+          }
+
+          currentPage++;
+          await delay(2000); // Pause de 2 secondes entre les requêtes
+      }
+
+      console.log(`Total results for Lego Set ID ${legoSetId}: ${totalResults}`);
   } catch (error) {
-    console.error(`Error scraping Lego Set ID ${legoSetId}:`, error);
+      console.error(`Error scraping Lego Set ID ${legoSetId}:`, error);
   }
 }
 
-// Boucle pour scraper tous les LEGO Set IDs (séquentiel)
+// Scraper toutes les recherches LEGO en parallèle
 async function scrapeAllLegoSets() {
-  for (const legoSetId of Lego_set_ids) {
-    console.log(`Starting scrape for Lego Set ID: ${legoSetId}`);
-    await sandbox(legoSetId); // Scraper chaque ID un par un (séquentiel)
-  }
+  console.log(`Starting to scrape ${Lego_set_ids.length} Lego Set IDs...`);
+
+  const scrapingTasks = Lego_set_ids.map(async (legoSetId) => {
+      await scrapeVintedWithPagination(legoSetId);
+  });
+
+  // Lancer toutes les requêtes en parallèle
+  await Promise.all(scrapingTasks);
+
   console.log("All scrapes completed!");
 
-
   if (allVintedDeals.length > 0) {
-    fs.writeFileSync(
-      './AllVinted.json',
-      JSON.stringify(allVintedDeals, null, 2),
-      'utf-8'
-    );
-    console.log(`✅ All sales saved in .AllVinted.json`);
+      fs.writeFileSync(
+          './AllVinted.json',
+          JSON.stringify(allVintedDeals, null, 2),
+          'utf-8'
+      );
+      console.log(`All sales saved in AllVinted.json`);
   } else {
-    console.log("❌ No deals found to save.");
+      console.log("No deals found to save.");
   }
 
   process.exit(0);
 }
 
-// ✅ Lancer le scrape automatique
+// Lancer le script automatiquement
 scrapeAllLegoSets().catch(error => {
   console.error("Error during scraping:", error);
   process.exit(1);
 });
+

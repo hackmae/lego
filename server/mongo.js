@@ -129,8 +129,6 @@ async function findSalesForLegoSet(db, legoSetId) {
 
 
 
-
-
 // Recent sales (< 3 weeks)
 async function findRecentSales(db) {
     const threeWeeksAgo = new Date();
@@ -165,6 +163,17 @@ async function findRecentSales(db) {
 
 
 // Exécution principale
+const readline = require('readline');
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+async function askQuestion(query) {
+    return new Promise(resolve => rl.question(query, resolve));
+}
+
 async function main() {
     const { db, client } = await connectDB();
 
@@ -173,29 +182,31 @@ async function main() {
     await insertSales(db);
 
     console.log("\n========== BEST DEALS ==========\n");
-    console.log("Best dicount :");
+    console.log("Best discount:");
     await findBestDiscountDeals(db);
 
     console.log("\n========== MOST COMMENTED DEALS ==========\n");
     await findMostCommentedDeals(db);
 
     console.log("\n========== DEALS BY PRICE ==========\n");
-    console.log(" Deals by price (ascending) :");
+    console.log("Deals by price (ascending):");
     await findDealsSortedByPrice(db);
 
     console.log("\n========== DEALS BY DATE ==========\n");
-    console.log("Find deals by date (most recent first) :");
+    console.log("Find deals by date (most recent first):");
     await findDealsSortedByDate(db);
 
-    const legoSetId = "42182";
+    // Saisie utilisateur dans la console
+    const legoSetId = await askQuestion("\nEnter Lego Set ID to search for: ");
     console.log(`\n========== VENTES POUR LE LEGO SET ${legoSetId} ==========\n`);
-    console.log(` Trouver toutes les ventes pour le Lego Set ID: ${legoSetId}`);
     await findSalesForLegoSet(db, legoSetId);
 
     console.log("\n========== RECENT SALES (< 3 weeks) ==========\n");
     await findRecentSales(db);
 
+    rl.close();
     await closeDB(client);
 }
 
 main().catch(console.error);
+
