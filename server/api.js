@@ -237,6 +237,15 @@ async function startServer() {
   }
 }
 
+// Exporter le handler pour Vercel
+module.exports = async (req, res) => {
+  if (!db) {
+    await connectDB();
+  }
+  return app(req, res);
+};
+
+
 // Arrêt propre de la connexion MongoDB
 process.on('SIGINT', async () => {
   await closeDB();

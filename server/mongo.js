@@ -198,7 +198,7 @@ async function main() {
 
     // Saisie utilisateur dans la console
     const legoSetId = await askQuestion("\nEnter Lego Set ID to search for: ");
-    console.log(`\n========== VENTES POUR LE LEGO SET ${legoSetId} ==========\n`);
+    console.log(`\n========== SALES FOR LEGO SET ${legoSetId} ==========\n`);
     await findSalesForLegoSet(db, legoSetId);
 
     console.log("\n========== RECENT SALES (< 3 weeks) ==========\n");
