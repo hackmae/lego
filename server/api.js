@@ -31,6 +31,21 @@ async function closeDB(client) {
     console.log("MongoDB connection closed.");
 }
 
+
+// ✅ Middleware pour activer CORS sur toutes les routes
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // ✅ Autorise toutes les origines (tu peux aussi spécifier une origine spécifique)
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // ✅ Méthodes autorisées
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // ✅ Headers autorisés
+  if (req.method === 'OPTIONS') {
+    res.status(204).end(); // ✅ Répondre directement au preflight avec un status 204
+    return;
+  }
+  next();
+});
+
+
+
 // Test Route
 app.get('/', (req, res) => {
   res.send({'ack': true});
@@ -44,7 +59,7 @@ app.get('/deals/search', async (req, res) => {
 
     // 1. Récupération des paramètres de la requête
     const {
-      limit = 12,   // Nombre max de résultats par défaut : 12
+      limit = 35,   // Nombre max de résultats 
       price,         // Prix maximum
       date,          // Date de publication
       filterBy        // Critère de tri (best-discount, most-commented)
@@ -216,6 +231,7 @@ app.get('/sales/search', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 

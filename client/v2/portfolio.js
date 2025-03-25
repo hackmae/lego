@@ -1,142 +1,198 @@
-// Invoking strict mode https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode#invoking_strict_mode
+// 🚀 Activer le mode strict
 'use strict';
 
-/**
-Description of the available api
-GET https://lego-api-blue.vercel.app/deals
+// ✅ Nouvelle API
+const API_URL = 'https://server-six-blond-36.vercel.app/deals/search';
 
-Search for specific deals
-
-This endpoint accepts the following optional query string parameters:
-
-- `page` - page of deals to return
-- `size` - number of deals to return
-
-GET https://lego-api-blue.vercel.app/sales
-
-Search for current Vinted sales for a given lego set id
-
-This endpoint accepts the following optional query string parameters:
-
-- `id` - lego set id to return
-*/
-
-// current deals on the page
+// 🌍 Variables Globales
 let currentDeals = [];
 let currentPagination = {};
 
-
-// instantiate the selectors
+// 🟢 Sélecteurs DOM
 const selectShow = document.querySelector('#show-select');
 const selectPage = document.querySelector('#page-select');
 const selectLegoSetIds = document.querySelector('#lego-set-id-select');
-const sectionDeals= document.querySelector('#deals');
+const sectionDeals = document.querySelector('#deals');
 const spanNbDeals = document.querySelector('#nbDeals');
 
 /**
- * Set global value
+ * 🌟 Set global value
  * @param {Array} result - deals to display
  * @param {Object} meta - pagination meta info
  */
-const setCurrentDeals = ({result, meta}) => {
-  currentDeals = result;
-  currentPagination = meta;
+const setCurrentDeals = ({ result, meta }) => {
+  currentDeals = result || [];
+  currentPagination = meta || {};
 };
 
 /**
- * Fetch deals from api
+ * 🌟 Fetch deals from API
  * @param  {Number}  [page=1] - current page to fetch
- * @param  {Number}  [size=12] - size of the page
+ * @param  {Number}  [size=6] - size of the page
  * @return {Object}
  */
 const fetchDeals = async (page = 1, size = 6) => {
   try {
-    const response = await fetch(
-      `https://lego-api-blue.vercel.app/deals?page=${page}&size=${size}`
-    );
-    const body = await response.json();
+    const offset = (page - 1) * size;
+    console.log(`🚀 Fetching deals from page=${page}, size=${size}, offset=${offset}`);
 
-    if (body.success !== true) {
-      console.error(body);
-      return {currentDeals, currentPagination};
+    const url = `${API_URL}?limit=${size}&offset=${offset}`;
+    console.log(`➡️ Fetching from URL: ${url}`);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors', // ✅ Activation du mode CORS
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`❌ API responded with status: ${response.status}`);
     }
 
-    return body.data;
+    const body = await response.json();
+    console.log('✅ Fetched data:', body);
+
+    if (!body.results) {
+      console.warn('⚠️ No deals returned from the API');
+      return { currentDeals: [], currentPagination: {} };
+    }
+
+    return {
+      currentDeals: body.results,
+      currentPagination: {
+        currentPage: page,
+        pageSize: size,
+        totalItems: body.total,
+        pageCount: Math.ceil(body.total / size)
+      }
+    };
   } catch (error) {
-    console.error(error);
-    return {currentDeals, currentPagination};
+    console.error('❌ Error fetching deals:', error);
+    return { currentDeals: [], currentPagination: {} };
   }
 };
 
 /**
- * Render list of deals
+ * 🌟 Render list of deals
  * @param  {Array} deals
  */
-const renderDeals = deals => {
+const renderDeals = (deals) => {
+  console.log('🔎 Rendering deals:', deals);
+
+  // ✅ Vérification avant le rendu
+  if (!deals || deals.length === 0) {
+    console.warn('⚠️ No deals to render');
+    sectionDeals.innerHTML = '<h2>Deals</h2><p>No deals found.</p>';
+    return;
+  }
+
   const fragment = document.createDocumentFragment();
   const div = document.createElement('div');
   div.className = 'deals-container';
+
   const template = deals
     .map(deal => {
+      // ✅ Vérification et valeurs par défaut
+      const id = deal.id || 'N/A';
+      const title = deal.title || 'Unknown Title';
+      const price = deal.price ? `${deal.price} €` : 'N/A';
+      const link = deal.link || '#';
+      const date = deal.published ? new Date(deal.published).toLocaleDateString() : 'Unknown Date';
+
+      // ✅ Gestion des images avec fallback
+      const image = deal.image 
+        ? deal.image
+            .replace('${thread.mainImage.slotId}', '')
+            .replace('${thread.mainImage.name}', '')
+            .replace('${thread.mainImage.ext}', '')
+        : 'placeholder.png';
+
+      // ✅ HTML avec des valeurs valides
       return `
-      <div class="deal" id="${deal.uuid}">
-          <img src="${deal.photo || 'placeholder.png'}" alt="Deal Image">
-          <p><strong>ID:</strong> ${deal.id}</p>
-          <p><strong>Name:</strong> <a href="${deal.link}" target="_blank">${deal.title}</a></p>
-          <p><strong>Price:</strong> ${deal.price}</p>
-          <p><strong>Date:</strong> ${new Date(deal.published)}</p>
-          <span id="starDeals" class="favorite-deal">★</span>
+        <div class="deal" id="${id}">
+            <img 
+              src="${image}" 
+              alt="Deal Image" 
+              onerror="this.src='placeholder.png';"
+            >
+            <p><strong>ID:</strong> ${id}</p>
+            <p><strong>Name:</strong> <a href="${link}" target="_blank">${title}</a></p>
+            <p><strong>Price:</strong> ${price}</p>
+            <p><strong>Date:</strong> ${date}</p>
+            <span class="favorite-deal">★</span>
         </div>
-    `;
+      `;
     })
     .join('');
 
+  // ✅ Rendu final
   div.innerHTML = template;
   fragment.appendChild(div);
   sectionDeals.innerHTML = '<h2>Deals</h2>';
   sectionDeals.appendChild(fragment);
+
+  console.log('✅ Deals rendered successfully');
 };
 
 
+
+
+const SALES_API_URL = 'https://server-six-blond-36.vercel.app/sales/search';
+
 /**
- * Fetch Vinted sales for a given Lego set ID
+ * 🌟 Fetch Vinted sales for a given Lego set ID
  * @param {string} id - The Lego set ID to fetch sales for
  * @return {Array} - list of sales
  */
 const fetchSales = async (id) => {
   if (!id || id.trim() === '') {
-    console.log('ID is empty');
-    return { result: [] };
+    console.log('⚠️ ID is empty');
+    return [];
   }
 
   try {
-    console.log(`Fetching sales for ID: ${id}`);
-    const response = await fetch(`https://lego-api-blue.vercel.app/sales?id=${id}`);
-    const body = await response.json();
+    console.log(`🚀 Fetching sales for ID: ${id}`);
 
-    if (body.success !== true) {
-      console.error('API Error:', body);
-      return { result: [] };
+    const url = `${SALES_API_URL}?legoSetId=${encodeURIComponent(id)}`;
+    console.log(`➡️ Fetching from URL: ${url}`);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors', // ✅ Active CORS pour éviter les problèmes de politique CORS
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`❌ Failed to fetch sales. Status: ${response.status}`);
     }
 
-    console.log('Fetched sales:', body.data);
-    return body.data; 
+    const body = await response.json();
+    console.log('✅ Fetched sales:', body);
+
+    // ✅ Vérification de la structure de la réponse
+    if (!body.results || body.results.length === 0) {
+      console.warn('⚠️ No sales returned from the API');
+      return [];
+    }
+
+    return body.results;
   } catch (error) {
-    console.error('Fetch error:', error);
-    return { result: [] };
+    console.error('❌ Error fetching sales:', error);
+    return [];
   }
 };
 
-
-
 /**
- * Render Vinted sales for a given Lego set ID
+ * 🌟 Render Vinted sales for a given Lego set ID
  * @param {Array} sales - list of sales
  */
 const renderSales = (sales) => {
-  console.log("Dates renderSales", sales);
-
-  const salesArray = sales.result || [];
+  console.log("📊 Rendering sales:", sales);
 
   const sectionSales = document.querySelector('#vinted-sales');
   sectionSales.innerHTML = '<h2>Sales</h2>';
@@ -144,87 +200,169 @@ const renderSales = (sales) => {
   const salesContainer = document.createElement('div');
   salesContainer.className = 'sales-container';
 
-  if (!salesArray || salesArray.length === 0) {
-    console.log("No sales!");
+  if (!sales || sales.length === 0) {
+    console.warn('⚠️ No sales to render');
     const noSalesMessage = document.createElement('p');
-    noSalesMessage.textContent = "No sales found for this Lego set ID.";
+    noSalesMessage.textContent = 'No sales found for this Lego set ID.';
     sectionSales.appendChild(noSalesMessage);
   } else {
-    console.log("Show sales");
+    sales.forEach((sale) => {
+      console.log(`➡️ Rendering sale: ${sale.title}`);
 
-    salesArray.forEach((sale) => {
       const saleDiv = document.createElement('div');
       saleDiv.classList.add('sale');
 
       saleDiv.innerHTML = `
-        <p><strong>ID/Name:</strong> ${sale.title}</p>
-        <p><strong>Price:</strong> ${sale.price}</p>
+        <p><strong>ID/Name:</strong> ${sale.title || 'N/A'}</p>
+        <p><strong>Price:</strong> ${sale.price ? `${sale.price} €` : 'N/A'}</p>
         <p><strong>Date:</strong> ${sale.published}</p>
-        <p><strong>Buy Link:</strong> <a href="${sale.link}" target="_blank">${sale.link}</a></p>
+        <p><strong>Buy Link:</strong> <a href="${sale.link}" target="_blank">${sale.link || 'N/A'}</a></p>
       `;
 
       salesContainer.appendChild(saleDiv);
     });
 
     sectionSales.appendChild(salesContainer);
+    console.log('✅ Sales rendered successfully');
   }
 };
 
 
 
-
 /**
- * Render page selector
+ * 🌟 Render pagination
  * @param  {Object} pagination
  */
-const renderPagination = pagination => {
-  const {currentPage, pageCount} = pagination;
+const renderPagination = (pagination) => {
+  console.log('📊 Rendering pagination:', pagination);
+
+  const { currentPage, pageCount } = pagination;
+
+  if (!pageCount) return;
+
   const options = Array.from(
-    {'length': pageCount},
-    (value, index) => `<option value="${index + 1}">${index + 1}</option>`
+    { length: pageCount },
+    (_, index) => `<option value="${index + 1}">${index + 1}</option>`
   ).join('');
 
   selectPage.innerHTML = options;
   selectPage.selectedIndex = currentPage - 1;
+  console.log(`✅ Pagination rendered: ${pageCount} pages`);
 };
 
 /**
- * Render lego set ids selector
- * @param  {Array} lego set ids
+ * 🌟 Extract IDs from deals
+ * @param {Array} deals
  */
-const renderLegoSetIds = deals => {
-  const ids = getIdsFromDeals(deals);
-  const options = ids.map(id => 
-    `<option value="${id}">${id}</option>`
-  ).join('');
+const getIdsFromDeals2 = (deals) => {
+  return [...new Set(deals.map(deal => deal.id))];
+};
 
+/**
+ * 🌟 Render Lego set IDs selector
+ * @param  {Array} deals
+ */
+const renderLegoSetIds = (deals) => {
+  console.log('🆔 Rendering Lego Set IDs');
+
+  const ids = getIdsFromDeals2(deals);
+
+  const options = ids.map(id => `<option value="${id}">${id}</option>`).join('');
   selectLegoSetIds.innerHTML = options;
 };
 
 /**
- * Render page selector
+ * 🌟 Render number of deals
  * @param  {Object} pagination
  */
-const renderIndicators = pagination => {
-  const {count} = pagination;
+const renderIndicators = (pagination) => {
+  console.log('📈 Updating indicators:', pagination);
 
-  spanNbDeals.innerHTML = count;
+  const { totalItems } = pagination;
+  spanNbDeals.innerHTML = totalItems || 0;
 };
 
+/**
+ * 🌟 Main render function
+ * @param {Array} deals
+ * @param {Object} pagination
+ */
 const render = (deals, pagination) => {
+  console.log('🖼️ Rendering all components...');
   renderDeals(deals);
   renderPagination(pagination);
   renderIndicators(pagination);
-  renderLegoSetIds(deals)
+  renderLegoSetIds(deals);
 };
 
+/**
+ * 🌟 Handle Pagination
+ * @param {Number} page
+ * @param {Number} size
+ */
+const handlePagination = async (page = 1, size = 6) => {
+  console.log(`📲 Handling pagination -> page=${page}, size=${size}`);
+
+  const { currentDeals, currentPagination } = await fetchDeals(page, size);
+
+  setCurrentDeals({ result: currentDeals, meta: currentPagination });
+  render(currentDeals, currentPagination);
+};
+
+/**
+ * 🌟 Init on Page Load
+ */
 document.addEventListener('DOMContentLoaded', async () => {
-  const deals = await fetchDeals();
+  console.log('🌍 Document loaded');
 
-  setCurrentDeals(deals);
+  const { currentDeals, currentPagination } = await fetchDeals(1, 6);
 
+  setCurrentDeals({ result: currentDeals, meta: currentPagination });
   render(currentDeals, currentPagination);
 });
+
+/**
+ * 🌟 Update Pagination on Change
+ */
+selectPage.addEventListener('change', async (event) => {
+  console.log(`📲 Page changed to: ${event.target.value}`);
+  await handlePagination(parseInt(event.target.value));
+});
+
+/**
+ * 🌟 Update Number of Deals on Change
+ */
+selectShow.addEventListener('change', async (event) => {
+  console.log(`📲 Changing number of deals to: ${event.target.value}`);
+  await handlePagination(1, parseInt(event.target.value));
+});
+
+/**
+ * 🌟 Update when Lego Set ID is Selected
+ */
+selectLegoSetIds.addEventListener('change', async (event) => {
+  console.log(`🔎 Searching for Lego Set ID: ${event.target.value}`);
+
+  const id = event.target.value;
+  const url = `${API_URL}?legoSetId=${id}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
+
+    const body = await response.json();
+
+    setCurrentDeals({ result: body.results, meta: body.pagination });
+    render(body.results, body.pagination);
+  } catch (error) {
+    console.error('❌ Error fetching Lego Set Data:', error);
+  }
+});
+
+
+
+
+
 
 /**
  * Declaration of all Listeners
