@@ -7,6 +7,7 @@ const API_URL = 'https://server-six-blond-36.vercel.app/deals/search';
 // 🌍 Variables Globales
 let currentDeals = [];
 let currentPagination = {};
+let isLoading = false;
 
 // 🟢 Sélecteurs DOM
 const selectShow = document.querySelector('#show-select');
@@ -14,6 +15,16 @@ const selectPage = document.querySelector('#page-select');
 const selectLegoSetIds = document.querySelector('#lego-set-id-select');
 const sectionDeals = document.querySelector('#deals');
 const spanNbDeals = document.querySelector('#nbDeals');
+
+// ✅ Fonction pour afficher le loader
+const showLoader = () => {
+  sectionDeals.innerHTML = '<p>Loading deals...</p>';
+};
+
+// ✅ Fonction pour masquer le loader
+const hideLoader = () => {
+  sectionDeals.innerHTML = '';
+};
 
 /**
  * 🌟 Set global value
@@ -33,6 +44,11 @@ const setCurrentDeals = ({ result, meta }) => {
  */
 const fetchDeals = async (page = 1, size = 6) => {
   try {
+    if (isLoading) return;
+    isLoading = true;
+
+    showLoader();
+
     const offset = (page - 1) * size;
     console.log(`🚀 Fetching deals from page=${page}, size=${size}, offset=${offset}`);
 
@@ -41,7 +57,7 @@ const fetchDeals = async (page = 1, size = 6) => {
 
     const response = await fetch(url, {
       method: 'GET',
-      mode: 'cors', // ✅ Activation du mode CORS
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json'
       }
@@ -52,12 +68,14 @@ const fetchDeals = async (page = 1, size = 6) => {
     }
 
     const body = await response.json();
-    console.log('✅ Fetched data:', body);
 
     if (!body.results) {
       console.warn('⚠️ No deals returned from the API');
       return { currentDeals: [], currentPagination: {} };
     }
+
+    isLoading = false;
+    hideLoader();
 
     return {
       currentDeals: body.results,
@@ -65,11 +83,13 @@ const fetchDeals = async (page = 1, size = 6) => {
         currentPage: page,
         pageSize: size,
         totalItems: body.total,
-        pageCount: Math.ceil(body.total / size)
+        pageCount: Math.ceil(body.total / size) // ✅ Recalcul dynamique du nombre de pages
       }
     };
   } catch (error) {
     console.error('❌ Error fetching deals:', error);
+    isLoading = false;
+    hideLoader();
     return { currentDeals: [], currentPagination: {} };
   }
 };
@@ -81,9 +101,7 @@ const fetchDeals = async (page = 1, size = 6) => {
 const renderDeals = (deals) => {
   console.log('🔎 Rendering deals:', deals);
 
-  // ✅ Vérification avant le rendu
   if (!deals || deals.length === 0) {
-    console.warn('⚠️ No deals to render');
     sectionDeals.innerHTML = '<h2>Deals</h2><p>No deals found.</p>';
     return;
   }
@@ -92,49 +110,134 @@ const renderDeals = (deals) => {
   const div = document.createElement('div');
   div.className = 'deals-container';
 
-  const template = deals
-    .map(deal => {
-      // ✅ Vérification et valeurs par défaut
-      const id = deal.id || 'N/A';
-      const title = deal.title || 'Unknown Title';
-      const price = deal.price ? `${deal.price} €` : 'N/A';
-      const link = deal.link || '#';
-      const date = deal.published ? new Date(deal.published).toLocaleDateString() : 'Unknown Date';
+  const template = deals.map(deal => {
+    const id = deal.id || 'N/A';
+    const title = deal.title || 'Unknown Title';
+    const price = deal.price ? `${deal.price} €` : 'N/A';
+    const link = deal.link || '#';
+    const date = deal.published ? new Date(deal.published).toLocaleDateString() : 'Unknown Date';
 
-      // ✅ Gestion des images avec fallback
-      const image = deal.image 
-        ? deal.image
-            .replace('${thread.mainImage.slotId}', '')
-            .replace('${thread.mainImage.name}', '')
-            .replace('${thread.mainImage.ext}', '')
-        : 'placeholder.png';
+    let image = deal.image || 'placeholder.png';
+    image = image.replace(/\$\{[^}]+\}/g, '');
 
-      // ✅ HTML avec des valeurs valides
-      return `
-        <div class="deal" id="${id}">
-            <img 
-              src="${image}" 
-              alt="Deal Image" 
-              onerror="this.src='placeholder.png';"
-            >
-            <p><strong>ID:</strong> ${id}</p>
-            <p><strong>Name:</strong> <a href="${link}" target="_blank">${title}</a></p>
-            <p><strong>Price:</strong> ${price}</p>
-            <p><strong>Date:</strong> ${date}</p>
-            <span class="favorite-deal">★</span>
-        </div>
-      `;
-    })
-    .join('');
+    return `
+      <div class="deal" id="${id}">
+        <img 
+          src="${image}" 
+          alt="Deal Image" 
+          onerror="this.src='placeholder.png';"
+        >
+        <p><strong>ID:</strong> ${id}</p>
+        <p><strong>Name:</strong> <a href="${link}" target="_blank">${title}</a></p>
+        <p><strong>Price:</strong> ${price}</p>
+        <p><strong>Date:</strong> ${date}</p>
+        <span class="favorite-deal">★</span>
+      </div>
+    `;
+  }).join('');
 
-  // ✅ Rendu final
   div.innerHTML = template;
   fragment.appendChild(div);
   sectionDeals.innerHTML = '<h2>Deals</h2>';
   sectionDeals.appendChild(fragment);
-
-  console.log('✅ Deals rendered successfully');
 };
+
+/**
+ * 🌟 Render pagination (Dynamique)
+ * @param {Object} pagination
+ */
+const renderPagination = (pagination) => {
+  console.log('📊 Rendering pagination:', pagination);
+
+  const { currentPage, pageCount } = pagination;
+
+  if (!pageCount) return;
+
+  // ✅ Supprimer et reconstruire les options
+  selectPage.innerHTML = '';
+  
+  for (let i = 1; i <= pageCount; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = i;
+    selectPage.appendChild(option);
+  }
+
+  // ✅ Mettre la valeur sélectionnée
+  selectPage.value = currentPage;
+};
+
+/**
+ * 🌟 Render number of deals
+ */
+const renderIndicators = (pagination) => {
+  const { totalItems } = pagination;
+  spanNbDeals.innerHTML = totalItems || 0;
+};
+
+/**
+ * 🌟 Render lego set IDs
+ */
+const renderLegoSetIds = (deals) => {
+  const ids = [...new Set(deals.map(deal => deal.id))];
+  selectLegoSetIds.innerHTML = ids.map(id => 
+    `<option value="${id}">${id}</option>`
+  ).join('');
+};
+
+/**
+ * 🌟 Main render function
+ */
+const render = (deals, pagination) => {
+  renderDeals(deals);
+  renderPagination(pagination);
+  renderIndicators(pagination);
+  renderLegoSetIds(deals);
+};
+
+/**
+ * 🌟 Handle Pagination
+ */
+const handlePagination = async (page = 1, size = 6) => {
+  const { currentDeals, currentPagination } = await fetchDeals(page, size);
+  setCurrentDeals({ result: currentDeals, meta: currentPagination });
+  render(currentDeals, currentPagination);
+};
+
+/**
+ * 🌟 Init on Page Load
+ */
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('🌍 Document loaded');
+  await handlePagination(1, 6);
+});
+
+/**
+ * 🌟 Update Pagination on Change
+ */
+selectPage.addEventListener('change', async (event) => {
+  console.log(`📲 Page changed to: ${event.target.value}`);
+  await handlePagination(parseInt(event.target.value));
+});
+
+/**
+ * 🌟 Update Number of Deals on Change
+ */
+selectShow.addEventListener('change', async (event) => {
+  console.log(`📲 Changing number of deals to: ${event.target.value}`);
+  await handlePagination(1, parseInt(event.target.value));
+});
+
+/**
+ * 🌟 Update when Lego Set ID is Selected
+ */
+selectLegoSetIds.addEventListener('change', async (event) => {
+  const id = event.target.value;
+  const filteredDeals = currentDeals.filter(deal => deal.id === id);
+  render(filteredDeals, currentPagination);
+});
+
+
 
 
 
@@ -226,138 +329,6 @@ const renderSales = (sales) => {
     console.log('✅ Sales rendered successfully');
   }
 };
-
-
-
-/**
- * 🌟 Render pagination
- * @param  {Object} pagination
- */
-const renderPagination = (pagination) => {
-  console.log('📊 Rendering pagination:', pagination);
-
-  const { currentPage, pageCount } = pagination;
-
-  if (!pageCount) return;
-
-  const options = Array.from(
-    { length: pageCount },
-    (_, index) => `<option value="${index + 1}">${index + 1}</option>`
-  ).join('');
-
-  selectPage.innerHTML = options;
-  selectPage.selectedIndex = currentPage - 1;
-  console.log(`✅ Pagination rendered: ${pageCount} pages`);
-};
-
-/**
- * 🌟 Extract IDs from deals
- * @param {Array} deals
- */
-const getIdsFromDeals2 = (deals) => {
-  return [...new Set(deals.map(deal => deal.id))];
-};
-
-/**
- * 🌟 Render Lego set IDs selector
- * @param  {Array} deals
- */
-const renderLegoSetIds = (deals) => {
-  console.log('🆔 Rendering Lego Set IDs');
-
-  const ids = getIdsFromDeals2(deals);
-
-  const options = ids.map(id => `<option value="${id}">${id}</option>`).join('');
-  selectLegoSetIds.innerHTML = options;
-};
-
-/**
- * 🌟 Render number of deals
- * @param  {Object} pagination
- */
-const renderIndicators = (pagination) => {
-  console.log('📈 Updating indicators:', pagination);
-
-  const { totalItems } = pagination;
-  spanNbDeals.innerHTML = totalItems || 0;
-};
-
-/**
- * 🌟 Main render function
- * @param {Array} deals
- * @param {Object} pagination
- */
-const render = (deals, pagination) => {
-  console.log('🖼️ Rendering all components...');
-  renderDeals(deals);
-  renderPagination(pagination);
-  renderIndicators(pagination);
-  renderLegoSetIds(deals);
-};
-
-/**
- * 🌟 Handle Pagination
- * @param {Number} page
- * @param {Number} size
- */
-const handlePagination = async (page = 1, size = 6) => {
-  console.log(`📲 Handling pagination -> page=${page}, size=${size}`);
-
-  const { currentDeals, currentPagination } = await fetchDeals(page, size);
-
-  setCurrentDeals({ result: currentDeals, meta: currentPagination });
-  render(currentDeals, currentPagination);
-};
-
-/**
- * 🌟 Init on Page Load
- */
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🌍 Document loaded');
-
-  const { currentDeals, currentPagination } = await fetchDeals(1, 6);
-
-  setCurrentDeals({ result: currentDeals, meta: currentPagination });
-  render(currentDeals, currentPagination);
-});
-
-/**
- * 🌟 Update Pagination on Change
- */
-selectPage.addEventListener('change', async (event) => {
-  console.log(`📲 Page changed to: ${event.target.value}`);
-  await handlePagination(parseInt(event.target.value));
-});
-
-/**
- * 🌟 Update Number of Deals on Change
- */
-selectShow.addEventListener('change', async (event) => {
-  console.log(`📲 Changing number of deals to: ${event.target.value}`);
-  await handlePagination(1, parseInt(event.target.value));
-});
-
-/**
- * 🌟 Update when Lego Set ID is Selected
- */
-selectLegoSetIds.addEventListener('change', async (event) => {
-  console.log(`🔎 Searching for Lego Set ID: ${event.target.value}`);
-
-  const id = event.target.value;
-  const url = `${API_URL}?legoSetId=${id}`;
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
-
-    const body = await response.json();
-
-    setCurrentDeals({ result: body.results, meta: body.pagination });
-    render(body.results, body.pagination);
-  } catch (error) {
-    console.error('❌ Error fetching Lego Set Data:', error);
-  }
-});
 
 
 
@@ -475,9 +446,9 @@ sortSelect1.addEventListener('change', async (event) => {
 
 //F6 - filter by date -> sort deals by date
 const filterDealsByDate = (deals, sortOption) => {
-  if (sortOption === 'date-asc') {
+  if (sortOption === 'date-desc') {
     return deals.sort((a, b) => new Date(a.published) - new Date(b.published));
-  } else if (sortOption === 'date-desc') {
+  } else if (sortOption === 'date-asc') {
     return deals.sort((a, b) => new Date(b.published) - new Date(a.published));
   }
   return deals; 
@@ -510,46 +481,52 @@ fetchSalesBtn.addEventListener("click", async () => {
 });
 
 
-
-// F8 - Display total number of sales
+/// F8 - Display total number of sales
 const updateTotalSales = (sales) => {
   const spanNbSales = document.querySelector('#nbSales');
 
-  // Ensure sales.result exists and is an array
-  const salesArray = Array.isArray(sales.result) ? sales.result : [];
+  console.log('➡️ updateTotalSales -> sales:', sales); // ✅ Log de debug
 
-  // Update the displayed number of sales
-  spanNbSales.textContent = salesArray.length.toString();
+  // Vérification que sales contient bien un tableau
+  if (!sales || !Array.isArray(sales)) {
+    console.warn('⚠️ No valid sales data to count');
+    spanNbSales.textContent = '0';
+    return;
+  }
+
+  // ✅ Nombre total de ventes
+  const totalSales = sales.length;
+  console.log(`✅ Total sales found: ${totalSales}`);
+
+  // ✅ Mise à jour de l'UI
+  spanNbSales.textContent = totalSales.toString();
 };
-
-
-selectLegoSetIds.addEventListener('input', async (event) => {
-  const inputSetId = event.target.value.trim();
-  console.log('Input Lego Set ID:', inputSetId);
-
-  const sales = await fetchSales(inputSetId);
-  
-  renderSales(sales);  // Display the sales in the UI
-  updateTotalSales(sales); // Update total sales count
-});
-
-
 
 // F9 - Display average p5, p25 and p50 price value
 const getAveragePrice = (sales) => {
-  if (!sales.result || sales.result.length === 0) return { p5: 0, p25: 0, p50: 0 };
-  // Extract prices and filter only valid numbers
-  const prices = sales.result
+  console.log('➡️ getAveragePrice -> sales:', sales); // ✅ Log de debug
+
+  if (!sales || sales.length === 0) {
+    console.warn('⚠️ No sales to calculate average price');
+    return { p5: 0, p25: 0, p50: 0 };
+  }
+
+  // ✅ Filtrer les prix valides
+  const prices = sales
     .map(sale => parseFloat(sale.price))
-    .filter(price => !isNaN(price))  // Remove NaN values
-    .sort((a, b) => a - b); // Sort in ascending order
+    .filter(price => !isNaN(price)) // Retirer les NaN
+    .sort((a, b) => a - b);
+
+  console.log('✅ Sorted Prices:', prices);
 
   if (prices.length === 0) return { p5: 0, p25: 0, p50: 0 };
 
-  // Calculate percentiles
+  // ✅ Calcul des percentiles
   const p5 = prices[Math.floor(prices.length * 0.05)] || prices[0];
   const p25 = prices[Math.floor(prices.length * 0.25)] || prices[0];
   const p50 = prices[Math.floor(prices.length * 0.5)] || prices[0];
+
+  console.log(`✅ Percentiles - P5: ${p5}, P25: ${p25}, P50: ${p50}`);
 
   return { p5, p25, p50 };
 };
@@ -557,60 +534,97 @@ const getAveragePrice = (sales) => {
 const updateAveragePrice = (sales) => {
   const { p5, p25, p50 } = getAveragePrice(sales);
 
-  // Select elements
   const spanP5 = document.querySelector('#p5');
   const spanP25 = document.querySelector('#p25');
   const spanP50 = document.querySelector('#p50');
 
-  // Update UI
   if (spanP5) spanP5.textContent = p5.toFixed(2);
   if (spanP25) spanP25.textContent = p25.toFixed(2);
   if (spanP50) spanP50.textContent = p50.toFixed(2);
+
+  console.log('✅ Average prices updated');
 };
-
-// Attach event listener
-selectLegoSetIds.addEventListener('input', async (event) => {
-  const inputSetId = event.target.value.trim();
-  console.log('Input Lego Set ID:', inputSetId);
-
-  const sales = await fetchSales(inputSetId);
-  
-  renderSales(sales);       // Display sales
-  updateTotalSales(sales);  // Update total sales count
-  updateAveragePrice(sales); // Update price percentiles
-});
 
 
 
 // F10 - Display lifetime value -> how long it exists on Vinted
 const getLifetimeValue = (sales) => {
-  if (!sales.result || sales.result.length === 0) return 0; // Handle empty data
-  const dates = sales.result.map(sale => new Date(sale.published));
+  console.log('➡️ getLifetimeValue -> sales:', sales);
+
+  if (!sales || sales.length === 0) {
+    console.warn('⚠️ No sales to calculate lifetime value');
+    return 0;
+  }
+
+  const dates = sales
+    .map(sale => {
+      console.log('➡️ Raw date:', sale.published);
+
+      // ✅ Format DD/MM/YYYY -> YYYY-MM-DD
+      const europeanDatePattern = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/;
+      const match = sale.published.match(europeanDatePattern);
+
+      if (match) {
+        const isoDate = `${match[3]}-${match[2]}-${match[1]}T${match[4]}:${match[5]}:${match[6]}`;
+        console.log('✅ Converted date:', isoDate);
+        return new Date(isoDate);
+      }
+
+      console.warn(`⚠️ Invalid date format: ${sale.published}`);
+      return null;
+    })
+    .filter(date => date !== null && !isNaN(date.getTime())); // Retirer les dates invalides
+
+  console.log('✅ Dates after parsing:', dates);
+
+  if (dates.length === 0) return 0;
+
   const minDate = new Date(Math.min(...dates));
   const maxDate = new Date(Math.max(...dates));
+
+  console.log('✅ Min Date:', minDate);
+  console.log('✅ Max Date:', maxDate);
+
   const lifetimeMiliSec = maxDate - minDate;
-  const lifetimeInDays = Math.ceil(lifetimeMiliSec / (1000 * 60 * 60 * 24)); // Convert ms to days
+  const lifetimeInDays = Math.ceil(lifetimeMiliSec / (1000 * 60 * 60 * 24));
+
+  console.log(`✅ Lifetime in days: ${lifetimeInDays}`);
+
   return lifetimeInDays;
 };
 
 const updateLifetimeValue = (sales) => {
   const lifetime = getLifetimeValue(sales);
+
   const spanLifetime = document.querySelector('#lifetime');
   spanLifetime.textContent = `${lifetime} days`;
-}
 
-// Attach event listener
+  console.log(`✅ Lifetime value updated: ${lifetime} days`);
+};
+
+
+
+// 🌟 Event Listener to Fetch Sales and Update Indicators
 selectLegoSetIds.addEventListener('input', async (event) => {
   const inputSetId = event.target.value.trim();
-  console.log('Input Lego Set ID:', inputSetId);
 
-  const sales = await fetchSales(inputSetId);
+  console.log('➡️ Input Lego Set ID:', inputSetId);
+
+  if (!inputSetId) return;
+
+  const sales = await fetchSales(inputSetId); // ✅ Fetch complet (avec metadata)
   
-  renderSales(sales);       // Display sales
-  updateTotalSales(sales);  // Update total sales count
-  updateAveragePrice(sales); // Update price percentiles
-  updateLifetimeValue(sales); // Update lifetime value
+  console.log('✅ Fetched Sales:', sales);
+
+  // ✅ Display sales
+  renderSales(sales);
+
+  // ✅ Update indicators
+  updateTotalSales(sales);  
+  updateAveragePrice(sales); 
+  updateLifetimeValue(sales);
 });
+
 
 
 
