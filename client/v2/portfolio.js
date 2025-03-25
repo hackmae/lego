@@ -110,36 +110,42 @@ const renderDeals = (deals) => {
   const div = document.createElement('div');
   div.className = 'deals-container';
 
-  const template = deals.map(deal => {
+  deals.forEach(deal => {
     const id = deal.id || 'N/A';
     const title = deal.title || 'Unknown Title';
-    const price = deal.price ? `${deal.price} €` : 'N/A';
+    const price = deal.price ? `${deal.price.toFixed(2)} €` : 'N/A';
     const link = deal.link || '#';
     const date = deal.published ? new Date(deal.published).toLocaleDateString() : 'Unknown Date';
 
+    // ✅ Gestion d'image par défaut
     let image = deal.image || 'placeholder.png';
     image = image.replace(/\$\{[^}]+\}/g, '');
 
-    return `
-      <div class="deal" id="${id}">
-        <img 
-          src="${image}" 
-          alt="Deal Image" 
-          onerror="this.src='placeholder.png';"
-        >
-        <p><strong>ID:</strong> ${id}</p>
-        <p><strong>Name:</strong> <a href="${link}" target="_blank">${title}</a></p>
-        <p><strong>Price:</strong> ${price}</p>
-        <p><strong>Date:</strong> ${date}</p>
-        <span class="favorite-deal">★</span>
-      </div>
-    `;
-  }).join('');
+    const dealCard = document.createElement('div');
+    dealCard.className = 'deal';
 
-  div.innerHTML = template;
+    dealCard.innerHTML = `
+      <img 
+        src="${image}" 
+        alt="${title}" 
+        onerror="this.src='placeholder.png';"
+      >
+      <h3>${title}</h3>
+      <p><span class="highlight">ID:</span> ${id}</p>
+      <p><span class="highlight">Price:</span> ${price}</p>
+      <p><span class="highlight">Date:</span> ${date}</p>
+      <span class="favorite-deal">★</span>
+      <a href="${link}" target="_blank">➡️ Open Deal</a>
+    `;
+
+    div.appendChild(dealCard);
+  });
+
   fragment.appendChild(div);
   sectionDeals.innerHTML = '<h2>Deals</h2>';
   sectionDeals.appendChild(fragment);
+
+  console.log('✅ Deals rendered successfully');
 };
 
 /**
@@ -713,4 +719,158 @@ filterFavoriteBtn.addEventListener('click', () => {
   }
 
   renderDeals(favorites); // Render only favorite deals
+});
+
+
+
+
+
+//BEST DEALS
+// ✅ Fonction pour filtrer les Best Deals
+const getBestDeals = async () => {
+  console.log('🏆 Filtering Best Deals...');
+
+  if (!currentDeals || currentDeals.length === 0) {
+    console.warn('⚠️ No deals to filter');
+    return [];
+  }
+
+  const filteredDeals = [];
+
+  for (const deal of currentDeals) {
+    console.log(`➡️ Processing deal: ${deal.title}`);
+
+    if (!deal.id || !deal.price) continue;
+
+    // ✅ Fetch sales pour ce deal
+    const sales = await fetchSales(deal.id);
+    console.log(`✅ Sales for ${deal.id}:`, sales);
+
+    // ✅ Vérification que sales est bien un tableau (via `results`)
+    const salesArray = Array.isArray(sales) ? sales : sales.results || [];
+    console.log('➡️ Sales Array:', salesArray);
+
+    if (!salesArray || salesArray.length === 0) {
+      console.warn(`⚠️ No sales for deal: ${deal.title}`);
+      continue;
+    }
+
+    // ✅ Lifetime du deal (conversion du format)
+    const lifetime = getLifetimeValue2(salesArray);
+    console.log(`➡️ Lifetime for ${deal.id}: ${lifetime} days`);
+
+    // ✅ Prix percentiles
+    const { p5, p25, p50 } = getAveragePrice(salesArray);
+    console.log(`➡️ Percentiles for ${deal.id}:`, { p5, p25, p50 });
+
+    // ✅ Vérifie si c'est un bon deal :
+    // - Lifetime < 100 jours
+    // - Prix médian (p50) > 1.5 * prix de base
+    if (lifetime < 100 && p50 > parseFloat(deal.price) * 1.2) {
+      console.log(`✅ Adding Best Deal: ${deal.title}`);
+      filteredDeals.push({
+        ...deal,
+        lifetime,
+        salesCount: salesArray.length,
+        p5,
+        p25,
+        p50
+      });
+    }
+  }
+
+  // ✅ Trie par lifetime le plus court en premier
+  filteredDeals.sort((a, b) => a.lifetime - b.lifetime);
+
+  // ✅ Limite à 5 deals
+  console.log(`🏆 Final Best Deals:`, filteredDeals);
+  return filteredDeals.slice(0, 5);
+};
+
+// ✅ Fonction pour afficher les Best Deals
+const renderBestDeals = async () => {
+  console.log('🏆 Rendering Best Deals...');
+
+  // ✅ Montre le message de chargement
+  const loadingIndicator = document.getElementById('best-deals-loading');
+  loadingIndicator.style.display = 'block';
+
+  const bestDeals = await getBestDeals();
+  console.log('✅ Best Deals:', bestDeals);
+
+  // ✅ Cache le message de chargement après traitement
+  loadingIndicator.style.display = 'none';
+
+  if (!bestDeals || bestDeals.length === 0) {
+    console.warn('⚠️ No Best Deals found');
+    sectionDeals.innerHTML = '<h2>Best Deals</h2><p>No deals available</p>';
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  const div = document.createElement('div');
+  div.className = 'best-deals-container';
+
+  bestDeals.forEach(deal => {
+    const template = `
+      <div class="best-deal" id="${deal.id}">
+        <img src="${deal.image || 'placeholder.png'}" alt="${deal.title}" />
+        <h3>${deal.title}</h3>
+        <p><span class="highlight">ID:</span> ${deal.id}</p>
+        <p><span class="highlight">Price:</span> ${deal.price.toFixed(2)} €</p>
+        <p><span class="highlight">Date:</span> ${new Date(deal.published).toLocaleDateString()}</p>
+        <div class="badge">Number of sales: ${deal.salesCount}</div>
+        <div class="badge">p5 sales price: ${deal.p5.toFixed(2)} €</div>
+        <div class="badge">p25 sales price: ${deal.p25.toFixed(2)} €</div>
+        <div class="badge">p50 sales price: ${deal.p50.toFixed(2)} €</div>
+        <p class="lifetime">Lifetime: ${deal.lifetime} days</p>
+        <a href="${deal.link}" target="_blank">➡️ Open Deal</a>
+      </div>
+    `;
+
+    div.innerHTML += template;
+  });
+
+  fragment.appendChild(div);
+  sectionDeals.innerHTML = '<h2>Best Deals</h2>';
+  sectionDeals.appendChild(fragment);
+
+  console.log('✅ Best Deals rendered successfully');
+};
+
+
+// ✅ Correction du format de date dans lifetime
+const getLifetimeValue2 = (sales) => {
+  if (!sales || sales.length === 0) return 0;
+
+  const dates = sales.map(sale => {
+    if (!sale.published) return null;
+    // Format : DD/MM/YYYY HH:MM:SS ➔ YYYY-MM-DDTHH:MM:SS
+    const [date, time] = sale.published.split(' ');
+    const [day, month, year] = date.split('/');
+    return new Date(`${year}-${month}-${day}T${time}`);
+  }).filter(date => !isNaN(date));
+
+  if (dates.length === 0) return 0;
+
+  const minDate = new Date(Math.min(...dates));
+  const maxDate = new Date(Math.max(...dates));
+  const lifetimeMiliSec = maxDate - minDate;
+  const lifetimeInDays = Math.ceil(lifetimeMiliSec / (1000 * 60 * 60 * 24));
+  return lifetimeInDays;
+};
+
+// ✅ Attacher le bouton Best Deals au DOM
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🌍 DOM Loaded');
+
+  const filterBestBtn = document.getElementById('filter-best-deals');
+  console.log('🏆 Best Deals Button:', filterBestBtn);
+
+  if (filterBestBtn) {
+    filterBestBtn.addEventListener('click', async () => {
+      console.log('🏆 Best Deals button clicked');
+      await renderBestDeals();
+    });
+  }
 });
