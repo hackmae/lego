@@ -151,15 +151,18 @@ input:hover {
 }
 
 /* 🌟 Favorite star */
-.deal .favorite-deal {
-  font-size: 1.2rem;
-  color: #60a5fa;
+.favorite-deal {
+  font-size: 1.3rem;
+  color: gold;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-.deal .favorite-deal.active {
-  color: #2563eb;
+.favorite-deal.active {
+  color: red;
 }
+
+
 
 /* 🌟 Sales container grid */
 .sales-container {

@@ -181,14 +181,13 @@ app.get('/sales/search', async (req, res) => {
 
     // 1. Récupération des paramètres de la requête
     const {
-      limit = 12,   // Nombre max de résultats
       legoSetId      // ID spécifique du set Lego
     } = req.query;
 
     const query = {};
     const sort = {};
 
-    console.log(`Params reçus : limit=${limit}, legoSetId=${legoSetId}`);
+    console.log(`Params reçus : legoSetId=${legoSetId}`);
 
     // 2. Filtrage par ID du set Lego (si spécifié)
     if (legoSetId) {
@@ -204,13 +203,11 @@ app.get('/sales/search', async (req, res) => {
     console.log('--- QUERY FINALE ---');
     console.log(`Query : ${JSON.stringify(query, null, 2)}`);
     console.log(`Sort : ${JSON.stringify(sort, null, 2)}`);
-    console.log(`Limit : ${limit}`);
 
     // 5. Lancer la requête MongoDB
     const sales = await db.collection('sales')
       .find(query)
       .sort(sort)
-      .limit(parseInt(limit))
       .toArray();
 
     console.log(`Nombre de résultats trouvés : ${sales.length}`);
@@ -222,7 +219,6 @@ app.get('/sales/search', async (req, res) => {
 
     // 6. Retourner la réponse formatée
     res.json({
-      limit: parseInt(limit),
       total: sales.length,
       results: sales
     });

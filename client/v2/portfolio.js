@@ -28,13 +28,14 @@ const hideLoader = () => {
 
 /**
  * 🌟 Set global value
- * @param {Array} result - deals to display
- * @param {Object} meta - pagination meta info
+ * @param {Object} data - contains result and meta
  */
-const setCurrentDeals = ({ result, meta }) => {
-  currentDeals = result || [];
-  currentPagination = meta || {};
+const setCurrentDeals = (deals, pagination) => {
+  currentDeals = deals || [];
+  currentPagination = pagination || {};
 };
+
+
 
 /**
  * 🌟 Fetch deals from API
@@ -111,18 +112,18 @@ const renderDeals = (deals) => {
   div.className = 'deals-container';
 
   deals.forEach(deal => {
-    const id = deal.id || 'N/A';
+    const id = deal.id?.toString() || 'N/A';
     const title = deal.title || 'Unknown Title';
     const price = deal.price ? `${deal.price.toFixed(2)} €` : 'N/A';
     const link = deal.link || '#';
     const date = deal.published ? new Date(deal.published).toLocaleDateString() : 'Unknown Date';
 
-    // ✅ Gestion d'image par défaut
     let image = deal.image || 'placeholder.png';
     image = image.replace(/\$\{[^}]+\}/g, '');
 
     const dealCard = document.createElement('div');
     dealCard.className = 'deal';
+    dealCard.setAttribute('data-id', id); // ✅ utilise data-id !
 
     dealCard.innerHTML = `
       <img 
@@ -147,6 +148,7 @@ const renderDeals = (deals) => {
 
   console.log('✅ Deals rendered successfully');
 };
+
 
 /**
  * 🌟 Render pagination (Dynamique)
@@ -201,14 +203,18 @@ const render = (deals, pagination) => {
   renderLegoSetIds(deals);
 };
 
+
+
+
 /**
  * 🌟 Handle Pagination
  */
 const handlePagination = async (page = 1, size = 6) => {
-  const { currentDeals, currentPagination } = await fetchDeals(page, size);
-  setCurrentDeals({ result: currentDeals, meta: currentPagination });
-  render(currentDeals, currentPagination);
+  const { currentDeals: deals, currentPagination: pagination } = await fetchDeals(page, size);
+  setCurrentDeals(deals, pagination);
+  render(deals, pagination);
 };
+
 
 /**
  * 🌟 Init on Page Load
@@ -665,61 +671,103 @@ document.addEventListener('click', async (event) => {
 
 
 
-// F13 - Save a deal as favorite
+
+
+// FAVORITE DEALS
+
+// ✅ Supprimer les favoris à chaque rechargement de la page
+window.addEventListener('beforeunload', () => {
+  console.log("🧹 Clearing favorites before page unload");
+  localStorage.removeItem('favorites');
+});
+
+// ✅ Toggle deal as favorite (add/remove from localStorage)
 const toggleFavorite = (deal, starElement) => {
   let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  const dealId = deal.id?.toString();
 
-  // Check if the deal is already in favorites
-  const index = favorites.findIndex((fav) => fav.uuid === deal.uuid);
+  console.log("⭐ toggleFavorite -> clicked on:", deal.title, `(ID: ${dealId})`);
+  console.log("📦 Current favorites:", favorites.map(f => f.id));
 
-  if (index !== -1) {
-    // Remove from favorites
-    favorites.splice(index, 1);
-    starElement.style.color = 'gold'; // Reset star color
+  const alreadyFavorite = favorites.some(fav => fav.id?.toString() === dealId);
+
+  if (alreadyFavorite) {
+    favorites = favorites.filter(fav => fav.id?.toString() !== dealId);
+    starElement.classList.remove('active');
+    console.log("🗑️ Removed from favorites:", dealId);
   } else {
-    // Add to favorites
     favorites.push(deal);
-    starElement.style.color = 'red'; // Turn star red
+    starElement.classList.add('active');
+    console.log("✅ Added to favorites:", dealId);
   }
 
   localStorage.setItem('favorites', JSON.stringify(favorites));
+  console.log("💾 Saved favorites:", favorites.map(f => f.id));
 };
 
-// Clear all favorites on page reload
-window.addEventListener('load', () => {
-  localStorage.removeItem('favorites'); // Clear favorites
-  document.querySelectorAll('.favorite-deal').forEach((starElement) => {
-    starElement.style.color = 'gold'; // Reset all stars to gold
-  });
-});
-
-// Event listener for saving/removing a deal as favorite
+// ✅ Gestion du clic sur les étoiles
 sectionDeals.addEventListener('click', (event) => {
-  // Ensure only the star is clicked
   if (event.target.classList.contains('favorite-deal')) {
-    const dealId = event.target.closest('.deal')?.id;
-    const deal = currentDeals.find((deal) => deal.uuid === dealId);
+    const card = event.target.closest('.deal');
+    const dealId = card?.getAttribute('data-id');
+    console.log("⭐ Star clicked in card with ID:", dealId);
+
+    const deal = currentDeals.find(d => d.id?.toString() === dealId);
 
     if (deal) {
       toggleFavorite(deal, event.target);
+    } else {
+      console.warn(`❌ Deal not found in currentDeals for ID: ${dealId}`);
     }
   }
 });
 
-// F14 - Filter deals by favorite
+// ✅ Restore star appearance based on favorites
+const restoreFavoriteStars = () => {
+  const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  console.log("🔁 Restoring stars for favorite IDs:", favorites.map(f => f.id?.toString()));
+
+  document.querySelectorAll('.favorite-deal').forEach(star => {
+    const card = star.closest('.deal');
+    const dealId = card?.getAttribute('data-id');
+    const isFavorite = favorites.some(deal => deal.id?.toString() === dealId);
+
+    if (isFavorite) {
+      star.classList.add('active');
+      console.log(`🌟 Star marked active for deal ID ${dealId}`);
+    } else {
+      star.classList.remove('active');
+    }
+  });
+};
+
+// ✅ Filter favorite deals button
 const filterFavoriteBtn = document.getElementById('filter-favorite-deals');
 
 filterFavoriteBtn.addEventListener('click', () => {
   const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+  console.log("🔍 Filtering favorites -> found:", favorites.length, "deal(s)");
 
   if (!favorites.length) {
-    console.log('No favorite deals found.');
-    renderDeals([]); // Clear the displayed deals
+    console.warn('⚠️ No favorite deals found.');
+    renderDeals([]);
     return;
   }
 
-  renderDeals(favorites); // Render only favorite deals
+  console.log("🎯 Rendering favorite deals:", favorites.map(d => d.id));
+  renderDeals(favorites);
+  setTimeout(restoreFavoriteStars, 100);
 });
+
+// ✅ Restore stars after page load
+window.addEventListener('load', () => {
+  console.log("🌍 Page loaded -> restoring favorites (if any)");
+  setTimeout(restoreFavoriteStars, 200);
+});
+
+
+
+
 
 
 
@@ -765,8 +813,8 @@ const getBestDeals = async () => {
 
     // ✅ Vérifie si c'est un bon deal :
     // - Lifetime < 100 jours
-    // - Prix médian (p50) > 1.5 * prix de base
-    if (lifetime < 100 && p50 > parseFloat(deal.price) * 1.2) {
+    // - p5 > 1.15 * prix de base
+    if (lifetime < 100 && (p5 > parseFloat(deal.price) * 1.15 || p50 > parseFloat(deal.price) * 1.32)) {
       console.log(`✅ Adding Best Deal: ${deal.title}`);
       filteredDeals.push({
         ...deal,
