@@ -1,4 +1,4 @@
-/* 🌟 General body styling */
+/* General body styling */
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
@@ -7,7 +7,7 @@ body {
   color: #334155;
 }
 
-/* 🌟 Main header styling */
+/* Main header styling */
 h1 {
   color: #1e40af;
   text-align: center;
@@ -23,7 +23,7 @@ h1 {
   letter-spacing: 1px;
 }
 
-/* 🌟 Section styling */
+/* Section styling */
 section {
   background-color: #ffffff;
   padding: 16px;
@@ -32,7 +32,7 @@ section {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* 🌟 Subheader styling */
+/* Subheader styling */
 h2 {
   border-bottom: 2px solid #60a5fa;
   padding-bottom: 8px;
@@ -41,7 +41,7 @@ h2 {
   margin-bottom: 12px;
 }
 
-/* 🌟 Layout for options and indicators */
+/* Layout for options and indicators */
 #pages,
 #options,
 #indicators,
@@ -52,7 +52,7 @@ h2 {
   flex-wrap: wrap;
 }
 
-/* 🌟 Inputs and buttons styling */
+/* Inputs and buttons styling */
 input,
 select,
 button {
@@ -107,7 +107,7 @@ input:hover {
   font-weight: bold;
 }
 
-/* 🌟 Deals container grid layout */
+/* Deals container grid layout */
 .deals-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* ✅ Taille uniforme */
@@ -115,7 +115,7 @@ input:hover {
   padding: 12px;
 }
 
-/* 🌟 Individual deal card styling */
+/* Individual deal card styling */
 .deal {
   background-color: #ffffff;
   padding: 12px;
@@ -131,7 +131,7 @@ input:hover {
   transform: translateY(-4px);
 }
 
-/* 🌟 Deal image styling */
+/* Deal image styling */
 .deal img {
   width: 100%;
   height: 150px; /* ✅ Taille uniforme */
@@ -139,7 +139,7 @@ input:hover {
   border-radius: 8px;
 }
 
-/* 🌟 Link styling */
+/* Link styling */
 .deal a {
   color: #2563eb;
   text-decoration: none;
@@ -150,7 +150,7 @@ input:hover {
   text-decoration: underline;
 }
 
-/* 🌟 Favorite star */
+/* Favorite star */
 .favorite-deal {
   font-size: 1.3rem;
   color: gold;
@@ -164,7 +164,7 @@ input:hover {
 
 
 
-/* 🌟 Sales container grid */
+/* Sales container grid */
 .sales-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -172,7 +172,7 @@ input:hover {
   padding: 12px;
 }
 
-/* 🌟 Individual sale card */
+/* Individual sale card */
 .sale {
   background-color: #ffffff;
   padding: 12px;
@@ -190,14 +190,14 @@ input:hover {
   text-decoration: underline;
 }
 
-/* 🌟 No sales message */
+/* No sales message */
 #vinted-sales p {
   font-size: 0.9rem;
   color: #6b7280;
   text-align: center;
 }
 
-/* 🌟 Highlight for favorite deals button */
+/* Highlight for favorite deals button */
 #filter-favorite-deals {
   background-color: #60a5fa;
   color: white;
@@ -208,7 +208,7 @@ input:hover {
   background-color: #2563eb;
 }
 
-/* 🌟 Pagination */
+/* Pagination */
 #page-select,
 #show-select {
   background-color: #f9fafb;
@@ -220,7 +220,7 @@ input:hover {
   color: #334155;
 }
 
-/* 🌟 Responsive Design */
+/* Responsive Design */
 @media (max-width: 768px) {
   #filters {
     flex-direction: column;
@@ -243,7 +243,7 @@ input:hover {
   }
 }
 
-/* 🌟 Indicators styling */
+/* Indicators styling */
 #indicators div {
   background-color: #e0f2fe;
   color: #2563eb;
@@ -264,13 +264,13 @@ input:hover {
   background-color: #bfdbfe;
 }
 
-/* 🌟 Highlight values */
+/* Highlight values */
 #indicators span {
   color: #2563eb;
   font-weight: bold;
 }
 
-/* 🌟 Bouton Best Deals */
+/* Bouton Best Deals */
 #filter-best-deals {
   background-color: #ff7f0e;
   color: white;
@@ -298,7 +298,7 @@ input:hover {
   margin-top: 10px;
   text-align: center;
 }
-/* 🌟 Best Deals container */
+/* Best Deals container */
 .best-deals-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* ✅ Taille uniforme */
@@ -306,7 +306,7 @@ input:hover {
   padding: 12px;
 }
 
-/* 🌟 Best Deal card */
+/* Best Deal card */
 .best-deal {
   background-color: #ffffff;
   padding: 12px;
@@ -322,7 +322,7 @@ input:hover {
   transform: translateY(-4px);
 }
 
-/* 🌟 Best Deal image */
+/* Best Deal image */
 .best-deal img {
   width: 100%;
   height: 150px; /* ✅ Taille uniforme */
@@ -330,7 +330,7 @@ input:hover {
   border-radius: 8px;
 }
 
-/* 🌟 Deal Title */
+/* Deal Title */
 .best-deal h3 {
   color: #2563eb;
   font-size: 1rem;
@@ -338,20 +338,20 @@ input:hover {
   margin-top: 8px;
 }
 
-/* 🌟 Deal Info */
+/* Deal Info */
 .best-deal p {
   margin: 4px 0;
   font-size: 0.85rem;
   color: #374151;
 }
 
-/* 🌟 Highlighted data */
+/* Highlighted data */
 .best-deal .highlight {
   color: #2563eb;
   font-weight: bold;
 }
 
-/* 🌟 Badge for number of sales and price value */
+/* Badge for number of sales and price value */
 .best-deal .badge {
   display: inline-block;
   background-color: #eff6ff;
@@ -363,14 +363,14 @@ input:hover {
   margin-top: 8px;
 }
 
-/* 🌟 Lifetime value */
+/* Lifetime value */
 .best-deal .lifetime {
   font-size: 0.85rem;
   color: #2563eb;
   font-weight: bold;
 }
 
-/* 🌟 Open Deal button */
+/* Open Deal button */
 .best-deal a {
   background-color: #3b82f6;
   color: white;
@@ -385,4 +385,31 @@ input:hover {
 
 .best-deal a:hover {
   background-color: #2563eb;
+}
+
+/* Pagination */
+.pagination-container button {
+  background-color: #e5e7eb;
+  color: #334155;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  margin: 0 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.pagination-container button:hover {
+  background-color: #d1d5db;
+}
+
+.pagination-container button.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.pagination-container button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

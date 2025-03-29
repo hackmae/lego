@@ -30,7 +30,7 @@ const parse = (data) => {
       const published = new Date(thread.publishedAt * 1000) || null;
       const title = thread.title || null;
 
-      // ✅ Match uniquement les ID à 5 chiffres
+      // Match uniquement les ID à 5 chiffres
       const idMatch = link ? link.match(/\b\d{5}\b/) : null;
       const id = idMatch ? idMatch[0] : thread?.threadId || null;
 
@@ -49,7 +49,7 @@ const parse = (data) => {
     })
     .get();
 
-  // ✅ Filtrer uniquement les ID à 5 chiffres
+  // Filtrer uniquement les ID à 5 chiffres
   const filteredDeals = deals.filter((deal) => /^\d{5}$/.test(deal.id));
 
   return filteredDeals;
@@ -62,7 +62,7 @@ const parse = (data) => {
  */
 module.exports.scrape = async (url) => {
   try {
-    console.log(`🚀 Scraping from: ${url}`);
+    console.log(`Scraping from: ${url}`);
 
     const response = await fetch(url, {
       headers: {
@@ -74,19 +74,19 @@ module.exports.scrape = async (url) => {
     });
 
     if (!response.ok) {
-      throw new Error(`❌ HTTP error! Status: ${response.status}`);
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const body = await response.text();
     const parsedDeals = parse(body);
 
-    // ✅ Stocker le résultat dans un fichier JSON
+    // Stocker le résultat dans un fichier JSON
     fs.writeFileSync('Alldeals.json', JSON.stringify(parsedDeals, null, 2), 'utf-8');
-    console.log(`✅ ${parsedDeals.length} deals saved to FilteredDeals.json`);
+    console.log(`${parsedDeals.length} deals saved to FilteredDeals.json`);
 
     return parsedDeals;
   } catch (error) {
-    console.error(`❌ Error scraping ${url}: ${error.message}`);
+    console.error(`Error scraping ${url}: ${error.message}`);
     return null;
   }
 };

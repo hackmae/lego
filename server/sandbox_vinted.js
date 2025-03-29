@@ -30,7 +30,7 @@ async function scrapeVintedWithPagination(legoSetId) {
 
   try {
     while (currentPage <= maxPages) {
-      console.log(`🧱 Scraping page ${currentPage} for Lego Set ID: ${legoSetId}...`);
+      console.log(`Scraping page ${currentPage} for Lego Set ID: ${legoSetId}...`);
 
       const deals = await vinted.scrapeWithCookies(legoSetId, currentPage);
 
@@ -38,7 +38,7 @@ async function scrapeVintedWithPagination(legoSetId) {
         totalResults += deals.length;
         allVintedDeals.push(...deals);
 
-        console.log(`✅ Found ${deals.length} deals on page ${currentPage}`);
+        console.log(`Found ${deals.length} deals on page ${currentPage}`);
 
         fs.writeFileSync(
           `./vinted-${legoSetId}.json`,
@@ -46,7 +46,7 @@ async function scrapeVintedWithPagination(legoSetId) {
           'utf-8'
         );
       } else {
-        console.log(`⚠️ No more results at page ${currentPage}`);
+        console.log(`No more results at page ${currentPage}`);
         break;
       }
 
@@ -54,22 +54,22 @@ async function scrapeVintedWithPagination(legoSetId) {
       await delay(1500); // Attendre 1.5 seconde entre les pages
     }
 
-    console.log(`📦 Total results for ${legoSetId}: ${totalResults}`);
+    console.log(`Total results for ${legoSetId}: ${totalResults}`);
   } catch (error) {
-    console.error(`❌ Error scraping ${legoSetId}:`, error);
+    console.error(`Error scraping ${legoSetId}:`, error);
   }
 }
 
 async function scrapeAllLegoSets() {
-  console.log(`🚀 Starting to scrape ${Lego_set_ids.length} Lego Set IDs...\n`);
+  console.log(`Starting to scrape ${Lego_set_ids.length} Lego Set IDs...\n`);
 
   for (const id of Lego_set_ids) {
-    console.log(`🔄 Scraping for Lego Set: ${id}`);
+    console.log(`Scraping for Lego Set: ${id}`);
     await scrapeVintedWithPagination(id);
     await delay(3000); // Attente entre les différents sets (3 secondes)
   }
 
-  console.log("\n✅ All scrapes completed!");
+  console.log("\nAll scrapes completed!");
 
   if (allVintedDeals.length > 0) {
     fs.writeFileSync(
@@ -77,15 +77,15 @@ async function scrapeAllLegoSets() {
       JSON.stringify(allVintedDeals, null, 2),
       'utf-8'
     );
-    console.log(`💾 Saved ${allVintedDeals.length} total deals to AllVinted.json`);
+    console.log(`Saved ${allVintedDeals.length} total deals to AllVinted.json`);
   } else {
-    console.log("⚠️ No deals found.");
+    console.log("No deals found.");
   }
 
   process.exit(0);
 }
 
 scrapeAllLegoSets().catch(error => {
-  console.error("❌ Fatal error:", error);
+  console.error("Fatal error:", error);
   process.exit(1);
 });
