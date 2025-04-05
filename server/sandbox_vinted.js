@@ -3,30 +3,25 @@ const vinted = require('./websites/vinted');
 const fs = require('fs');
 const path = require('path');
 
-// Lire le fichier AllDeals et extraire les IDs
 const allDeals = JSON.parse(fs.readFileSync('./AllDeals.json', 'utf-8'));
-
 const allVintedDeals = [];
 
 const Lego_set_ids = allDeals.map(deal => {
-  let match = deal.title.match(/\((\d{4,6})\)/); // Priorité aux nombres entre parenthèses
-
-  if (!match) {
-    // Sinon, capturer le premier nombre de 4-6 chiffres disponible dans le texte
-    match = deal.title.match(/\b\d{4,6}\b/);
-  }
-
-  return match ? match[1] || match[0] : null; // Prendre la valeur capturée
-}).filter(id => id !== null); // Filtrer les résultats null
+  let match = deal.title.match(/\((\d{4,6})\)/);
+  if (!match) match = deal.title.match(/\b\d{4,6}\b/);
+  return match ? match[1] || match[0] : null;
+}).filter(id => id !== null);
 
 console.log("Liste des IDs :", Lego_set_ids);
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+const seenLinks = new Set(); // Pour éviter les doublons globaux
+
 async function scrapeVintedWithPagination(legoSetId) {
   let currentPage = 1;
   let totalResults = 0;
-  const maxPages = 10; // Limite de pages
+  const maxPages = 10;
 
   try {
     while (currentPage <= maxPages) {
@@ -35,23 +30,29 @@ async function scrapeVintedWithPagination(legoSetId) {
       const deals = await vinted.scrapeWithCookies(legoSetId, currentPage);
 
       if (deals && deals.length > 0) {
-        totalResults += deals.length;
-        allVintedDeals.push(...deals);
+        const uniqueDeals = deals.filter(deal => {
+          if (seenLinks.has(deal.link)) return false;
+          seenLinks.add(deal.link);
+          return true;
+        });
 
-        console.log(`Found ${deals.length} deals on page ${currentPage}`);
+        totalResults += uniqueDeals.length;
+        allVintedDeals.push(...uniqueDeals);
 
         fs.writeFileSync(
           `./vinted-${legoSetId}.json`,
-          JSON.stringify(deals, null, 2),
+          JSON.stringify(uniqueDeals, null, 2),
           'utf-8'
         );
+
+        console.log(`Added ${uniqueDeals.length} new deals on page ${currentPage}`);
       } else {
         console.log(`No more results at page ${currentPage}`);
         break;
       }
 
       currentPage++;
-      await delay(1500); // Attendre 1.5 seconde entre les pages
+      await delay(1500);
     }
 
     console.log(`Total results for ${legoSetId}: ${totalResults}`);
@@ -66,7 +67,7 @@ async function scrapeAllLegoSets() {
   for (const id of Lego_set_ids) {
     console.log(`Scraping for Lego Set: ${id}`);
     await scrapeVintedWithPagination(id);
-    await delay(3000); // Attente entre les différents sets (3 secondes)
+    await delay(3000);
   }
 
   console.log("\nAll scrapes completed!");
@@ -77,7 +78,7 @@ async function scrapeAllLegoSets() {
       JSON.stringify(allVintedDeals, null, 2),
       'utf-8'
     );
-    console.log(`Saved ${allVintedDeals.length} total deals to AllVinted.json`);
+    console.log(`Saved ${allVintedDeals.length} unique deals to AllVinted.json`);
   } else {
     console.log("No deals found.");
   }

@@ -117,6 +117,7 @@ const renderDeals = (deals) => {
 };
 
 
+
 //Render number of deals
 const renderIndicators = () => {
   spanNbDeals.innerHTML = currentPagination.totalItems || 0;
@@ -258,13 +259,15 @@ const renderSales = (sales) => {
   const salesContainer = document.createElement('div');
   salesContainer.className = 'sales-container';
 
-  if (!sales || sales.length === 0) {
+  const uniqueSales = removeDuplicateSales(sales);
+
+  if (!uniqueSales || sales.length === 0) {
     console.warn('No sales to render');
     const noSalesMessage = document.createElement('p');
     noSalesMessage.textContent = 'No sales found for this Lego set ID.';
     sectionSales.appendChild(noSalesMessage);
   } else {
-    sales.forEach((sale) => {
+    uniqueSales.forEach((sale) => {
       console.log(`Rendering sale: ${sale.title}`);
 
       const saleDiv = document.createElement('div');
@@ -285,6 +288,14 @@ const renderSales = (sales) => {
   }
 };
 
+const removeDuplicateSales = (sales) => {
+  const seen = new Set();
+  return sales.filter(sale => {
+    if (seen.has(sale.link)) return false;
+    seen.add(sale.link);
+    return true;
+  });
+};
 
 
 
@@ -402,40 +413,45 @@ fetchSalesBtn.addEventListener("click", async () => {
 });
 
 
-/// F8 - Display total number of sales
+/// F8 - Display total number of sales (without duplicates)
 const updateTotalSales = (sales) => {
   const spanNbSales = document.querySelector('#nbSales');
 
-  console.log('updateTotalSales -> sales:', sales); 
+  console.log('updateTotalSales -> raw sales:', sales);
 
-  // Vérification que sales contient bien un tableau
-  if (!sales || !Array.isArray(sales)) {
+  // Vérification que sales est bien un tableau
+  if (!Array.isArray(sales)) {
     console.warn('No valid sales data to count');
     spanNbSales.textContent = '0';
     return;
   }
 
-  // Nombre total de ventes
-  const totalSales = sales.length;
-  console.log(`Total sales found: ${totalSales}`);
+  // Supprimer les doublons avant de compter
+  const uniqueSales = removeDuplicateSales(sales);
+  const totalSales = uniqueSales.length;
 
-  // Mise à jour de l'UI
+  console.log(`Total unique sales: ${totalSales} (filtered ${sales.length - totalSales} duplicates)`);
+
+  // Mettre à jour l'UI
   spanNbSales.textContent = totalSales.toString();
 };
 
+
 // F9 - Display average p5, p25 and p50 price value
 const getAveragePrice = (sales) => {
-  console.log('getAveragePrice -> sales:', sales);
+  console.log('getAveragePrice -> raw sales:', sales);
 
-  if (!sales || sales.length === 0) {
+  const uniqueSales = removeDuplicateSales(sales);
+
+  if (!uniqueSales || uniqueSales.length === 0) {
     console.warn('No sales to calculate average price');
     return { p5: 0, p25: 0, p50: 0 };
   }
 
   // Filtrer les prix valides
-  const prices = sales
+  const prices = uniqueSales
     .map(sale => parseFloat(sale.price))
-    .filter(price => !isNaN(price)) // Retirer les NaN
+    .filter(price => !isNaN(price))
     .sort((a, b) => a - b);
 
   console.log('Sorted Prices:', prices);
@@ -468,60 +484,62 @@ const updateAveragePrice = (sales) => {
 
 
 
+
 // F10 - Display lifetime value -> how long it exists on Vinted
 const getLifetimeValue = (sales) => {
-  console.log('getLifetimeValue -> sales:', sales);
+  console.log('getLifetimeValue -> raw sales:', sales);
 
-  if (!sales || sales.length === 0) {
+  if (!Array.isArray(sales) || sales.length === 0) {
     console.warn('No sales to calculate lifetime value');
     return 0;
   }
 
-  const dates = sales
+  // Supprimer les doublons par lien
+  const uniqueSales = removeDuplicateSales(sales);
+  console.log('Filtered unique sales:', uniqueSales);
+
+  const now = Date.now();
+  const durations = uniqueSales
     .map(sale => {
-      console.log('Raw date:', sale.published);
+      if (!sale.published) return null;
 
-      // Format DD/MM/YYYY -> YYYY-MM-DD
-      const europeanDatePattern = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/;
-      const match = sale.published.match(europeanDatePattern);
+      // Gère format "DD/MM/YYYY HH:mm:ss"
+      const europeanPattern = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/;
+      const match = sale.published.match(europeanPattern);
 
+      let publishedDate;
       if (match) {
         const isoDate = `${match[3]}-${match[2]}-${match[1]}T${match[4]}:${match[5]}:${match[6]}`;
-        console.log('Converted date:', isoDate);
-        return new Date(isoDate);
+        publishedDate = new Date(isoDate);
+      } else {
+        publishedDate = new Date(sale.published); // fallback
       }
 
-      console.warn(`Invalid date format: ${sale.published}`);
-      return null;
+      if (isNaN(publishedDate)) return null;
+
+      const ageInDays = (now - publishedDate.getTime()) / (1000 * 60 * 60 * 24);
+      return ageInDays;
     })
-    .filter(date => date !== null && !isNaN(date.getTime())); // Retirer les dates invalides
+    .filter(days => days !== null && !isNaN(days));
 
-  console.log('Dates after parsing:', dates);
+  if (durations.length === 0) {
+    console.warn('No valid publication dates found');
+    return 0;
+  }
 
-  if (dates.length === 0) return 0;
-
-  const minDate = new Date(Math.min(...dates));
-  const maxDate = new Date(Math.max(...dates));
-
-  console.log('Min Date:', minDate);
-  console.log('Max Date:', maxDate);
-
-  const lifetimeMiliSec = maxDate - minDate;
-  const lifetimeInDays = Math.ceil(lifetimeMiliSec / (1000 * 60 * 60 * 24));
-
-  console.log(`Lifetime in days: ${lifetimeInDays}`);
-
-  return lifetimeInDays;
+  const averageLifetime = Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length);
+  console.log(`Average Lifetime: ${averageLifetime} days`);
+  return averageLifetime;
 };
 
 const updateLifetimeValue = (sales) => {
   const lifetime = getLifetimeValue(sales);
-
   const spanLifetime = document.querySelector('#lifetime');
   spanLifetime.textContent = `${lifetime} days`;
-
   console.log(`Lifetime value updated: ${lifetime} days`);
 };
+
+
 
 
 
@@ -530,21 +548,17 @@ selectLegoSetIds.addEventListener('input', async (event) => {
   const inputSetId = event.target.value.trim();
 
   console.log('➡️ Input Lego Set ID:', inputSetId);
-
   if (!inputSetId) return;
 
   const sales = await fetchSales(inputSetId); 
-  
   console.log('Fetched Sales:', sales);
 
-  // Display sales
   renderSales(sales);
-
-  // Update indicators
   updateTotalSales(sales);  
   updateAveragePrice(sales); 
   updateLifetimeValue(sales);
 });
+
 
 
 
@@ -681,48 +695,73 @@ window.addEventListener('load', () => {
 const getBestDeals = async () => {
   console.log('Filtering Best Deals...');
 
-  if (!currentDeals || currentDeals.length === 0) {
+  if (!Array.isArray(allDeals) || allDeals.length === 0) {
     console.warn('No deals to filter');
     return [];
   }
 
-  const filteredDeals = [];
+  const bestDeals = [];
 
-  for (const deal of currentDeals) {
-    console.log(`Processing deal: ${deal.title}`);
-
+  for (const deal of allDeals) {
     if (!deal.id || !deal.price) continue;
 
-    // Fetch sales pour ce deal
+
+    console.log(`Processing deal: ${deal.title}`);
+
+    const price = parseFloat(deal.price);
+    const discount = parseFloat(deal.discount || 0);
+    const comments = parseInt(deal.comments || 0);
+    const temperature = parseFloat(deal.temperature || 0);
+
     const sales = await fetchSales(deal.id);
-    console.log(`Sales for ${deal.id}:`, sales);
+    if (!sales || sales.length === 0) continue;
 
-    // Vérification que sales est bien un tableau (via `results`)
-    const salesArray = Array.isArray(sales) ? sales : sales.results || [];
-    console.log('Sales Array:', salesArray);
+    const uniqueSales = removeDuplicateSales(sales);
+    const lifetime = getLifetimeValue(uniqueSales);
+    const { p5, p25, p50 } = getAveragePrice(uniqueSales);
 
-    if (!salesArray || salesArray.length === 0) {
-      console.warn(`No sales for deal: ${deal.title}`);
-      continue;
+    console.log(`Price: ${price}`);
+    console.log(p5, p25, p50);
+
+    let score = 0;
+    const reasons = [];
+
+    if (price < p5) {
+      score += 2;
+      reasons.push("💥 Prix < p5");
+    }
+    if (price * 1.2 < p25) {
+      score += 1;
+      reasons.push("✅ price * 1.2 < p25");
+    }
+    if (price *1.5 < p50) {
+      score += 1;
+      reasons.push("✅ price *1.5 < p50");
+    }
+    if (comments >= 10) {
+      score += 1;
+      reasons.push("💬 ≥ 10 commentaires");
+    }
+    if (temperature >= 100) {
+      score += 1;
+      reasons.push("🔥 Température ≥ 100");
+    }
+    if (discount >= 25) {
+      score += 1;
+      reasons.push("💸 Réduction ≥ 25%");
+    }
+    if (uniqueSales.length >= 8) {
+      score += 1;
+      reasons.push("📈 ≥ 8 ventes");
     }
 
-    // Lifetime du deal (conversion du format)
-    const lifetime = getLifetimeValue2(salesArray);
-    console.log(`Lifetime for ${deal.id}: ${lifetime} days`);
-
-    // Prix percentiles
-    const { p5, p25, p50 } = getAveragePrice(salesArray);
-    console.log(`Percentiles for ${deal.id}:`, { p5, p25, p50 });
-
-    // Vérifie si c'est un bon deal :
-    // - Lifetime < 100 jours
-    // - p5 > 1.15 * prix de base OU p50 > 1.32 * prix de base
-    if (lifetime < 100 && (p5 > parseFloat(deal.price) * 1.15 || p50 > parseFloat(deal.price) * 1.32)) {
-      console.log(`Adding Best Deal: ${deal.title}`);
-      filteredDeals.push({
+    if (score >= 4) {
+      bestDeals.push({
         ...deal,
         lifetime,
-        salesCount: salesArray.length,
+        score,
+        scoreNote: `${score}/8 - ${reasons.join(', ')}`,
+        salesCount: uniqueSales.length,
         p5,
         p25,
         p50
@@ -730,40 +769,33 @@ const getBestDeals = async () => {
     }
   }
 
-  // Trie par lifetime le plus court en premier
-  filteredDeals.sort((a, b) => a.lifetime - b.lifetime);
-
-  // Limite à 5 deals
-  console.log(`Final Best Deals:`, filteredDeals);
-  return filteredDeals.slice(0, 5);
+  bestDeals.sort((a, b) => b.score - a.score || a.lifetime - b.lifetime);
+  console.log('Final Best Deals:', bestDeals);
+  return bestDeals;
 };
 
-// Fonction pour afficher les Best Deals
+
+
 const renderBestDeals = async () => {
   console.log('Rendering Best Deals...');
-
-  // Montre le message de chargement
   const loadingIndicator = document.getElementById('best-deals-loading');
   loadingIndicator.style.display = 'block';
 
   const bestDeals = await getBestDeals();
-  console.log('Best Deals:', bestDeals);
-
-  // Cache le message de chargement après traitement
   loadingIndicator.style.display = 'none';
 
+  const sectionDeals = document.querySelector('#deals');
   if (!bestDeals || bestDeals.length === 0) {
-    console.warn('No Best Deals found');
     sectionDeals.innerHTML = '<h2>Best Deals</h2><p>No deals available</p>';
     return;
   }
 
   const fragment = document.createDocumentFragment();
-  const div = document.createElement('div');
-  div.className = 'best-deals-container';
+  const container = document.createElement('div');
+  container.className = 'best-deals-container';
 
   bestDeals.forEach(deal => {
-    const template = `
+    container.innerHTML += `
       <div class="best-deal" id="${deal.id}">
         <img src="${deal.image || 'placeholder.png'}" alt="${deal.title}" />
         <h3>${deal.title}</h3>
@@ -776,50 +808,31 @@ const renderBestDeals = async () => {
         <div class="badge">p50 sales price: ${deal.p50.toFixed(2)} €</div>
         <p class="lifetime">Lifetime: ${deal.lifetime} days</p>
         <a href="${deal.link}" target="_blank">➡️ Open Deal</a>
+        
+        <div class="score-summary">
+        <span class="badge score">Score: ${deal.score}/8</span>
+        <span class="badge ${deal.price < deal.p5 ? 'ok' : 'neutral'}">💥 Price < p5</span>
+        <span class="badge ${deal.price < deal.p25 * 1.5 ? 'ok' : 'neutral'}">✅ Price < 1.5*p25</span>
+        <span class="badge ${deal.price < deal.p50 * 2 ? 'ok' : 'neutral'}">✅ Price < 2*p50</span>
+        <span class="badge ${deal.comments >= 10 ? 'ok' : 'neutral'}">💬 ≥ 10 Comments</span>
+        <span class="badge ${deal.temperature >= 100 ? 'ok' : 'neutral'}">🔥 Temperature ≥ 100</span>
+        <span class="badge ${parseFloat(deal.discount || 0) >= 25 ? 'ok' : 'neutral'}">💸 Discount ≥ 25%</span>
+        <span class="badge ${deal.salesCount >= 8 ? 'ok' : 'neutral'}">📈 ≥ 8 Sales</span>
+      </div>
       </div>
     `;
-
-    div.innerHTML += template;
   });
 
-  fragment.appendChild(div);
+  fragment.appendChild(container);
   sectionDeals.innerHTML = '<h2>Best Deals</h2>';
   sectionDeals.appendChild(fragment);
-
-  console.log('Best Deals rendered successfully');
 };
 
 
-// Correction du format de date dans lifetime
-const getLifetimeValue2 = (sales) => {
-  if (!sales || sales.length === 0) return 0;
 
-  const dates = sales.map(sale => {
-    if (!sale.published) return null;
-    // Format : DD/MM/YYYY HH:MM:SS ➔ YYYY-MM-DDTHH:MM:SS
-    const [date, time] = sale.published.split(' ');
-    const [day, month, year] = date.split('/');
-    return new Date(`${year}-${month}-${day}T${time}`);
-  }).filter(date => !isNaN(date));
-
-  if (dates.length === 0) return 0;
-
-  const minDate = new Date(Math.min(...dates));
-  const maxDate = new Date(Math.max(...dates));
-  const lifetimeMiliSec = maxDate - minDate;
-  const lifetimeInDays = Math.ceil(lifetimeMiliSec / (1000 * 60 * 60 * 24));
-  return lifetimeInDays;
-};
-
-// Attacher le bouton Best Deals au DOM
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM Loaded');
   const filterBestBtn = document.getElementById('filter-best-deals');
-
   if (filterBestBtn) {
-    filterBestBtn.addEventListener('click', async () => {
-      console.log('Best Deals button clicked');
-      await renderBestDeals();
-    });
+    filterBestBtn.addEventListener('click', renderBestDeals);
   }
 });
