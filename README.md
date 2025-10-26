@@ -1,5 +1,9 @@
 # 🧱 Lego
 
+This project was made as part of my Web Design course in my fourth year at ESILV.
+
+I learned step by step how to create a real website through workshops.
+
 > First bricks for profitability
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -16,7 +20,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## 🎯 Objective
+## 🎯 My website
 This is the website I have made : https://lego-gray.vercel.app/ 
 
 Last update : 05/04/2025
